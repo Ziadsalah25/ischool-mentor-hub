@@ -22,6 +22,7 @@ console.log("=== 1. Verifying Project Files & Syntax ===");
 const requiredFiles = [
   "public/index.html",
   "public/css/styles.css",
+  "public/assets/logo.png",
   "public/js/config.js",
   "public/js/logo.js",
   "public/js/i18n.js",
