@@ -232,7 +232,27 @@ assert(goodPass.ok === true && goodPass.data.token.startsWith("tok:") && goodPas
 
 const tokBoot = postGs({ action: "load_bootstrap", idToken: goodPass.data.token });
 assert(tokBoot.ok === true && tokBoot.data.me.email === "ziadmohamedsalah63@gmail.com", "Session token authentication must load bootstrap");
-console.log("PASS: Password login & session token authentication verified.");
+
+// 2.8 Test First-Time Member Password Setup & Reset
+const addFreshMember = postGs({ action: "add_member", idToken: goodPass.data.token, name: "Fresh Mentor", email: "fresh@ischool.com", role: "mentor" });
+assert(addFreshMember.ok === true, "Admin created fresh mentor");
+
+const freshLogin = postGs({ action: "login_password", email: "fresh@ischool.com", password: "" });
+assert(freshLogin.ok === true && freshLogin.data.needs_setup === true, "Fresh member must be prompted to set password");
+
+const setupPw = postGs({ action: "set_member_password", email: "fresh@ischool.com", password: "freshpassword123" });
+assert(setupPw.ok === true && setupPw.data.token.startsWith("tok:"), "Password setup must succeed and return session token");
+
+const freshLoginAgain = postGs({ action: "login_password", email: "fresh@ischool.com", password: "freshpassword123" });
+assert(freshLoginAgain.ok === true && freshLoginAgain.data.user.role === "mentor", "Member can now log in with newly created password");
+
+const resetPw = postGs({ action: "reset_member_password", idToken: goodPass.data.token, id: addFreshMember.data.id });
+assert(resetPw.ok === true, "Admin can reset member password");
+
+const freshLoginAfterReset = postGs({ action: "login_password", email: "fresh@ischool.com", password: "" });
+assert(freshLoginAfterReset.ok === true && freshLoginAfterReset.data.needs_setup === true, "After reset, member must be prompted to set password again");
+
+console.log("PASS: First-time password setup and reset flow verified.");
 
 console.log("PASS: All Google Sheets Database operations & permissions verified.");
 console.log("ALL TESTS PASSED SUCCESSFULLY!");

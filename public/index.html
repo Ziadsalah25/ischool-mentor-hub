@@ -35,6 +35,26 @@
       </label>
       <button class="p" id="lg" style="width:100%;margin-top:16px">Sign in</button>
     </div>
+    <div id="setup-password-box" hidden>
+      <div style="background:var(--warnbg);border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13.5px">
+        <span>👋 Welcome, <b id="setup-name"></b>! Please create your password for the first time.</span>
+        <div class="m" style="margin-top:4px">أهلاً بك! يرجى إنشاء وتأكيد كلمة مرور خاصة بحسابك لأول مرة.</div>
+      </div>
+      <label class="m">New password / كلمة المرور الجديدة
+        <div class="pw-wrap">
+          <input id="np1" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+          <button type="button" id="toggle-np1" class="pw-eye" aria-label="Toggle password">👁️</button>
+        </div>
+      </label>
+      <label class="m" style="margin-top:12px">Confirm password / تأكيد كلمة المرور
+        <div class="pw-wrap">
+          <input id="np2" type="password" placeholder="Repeat password" autocomplete="new-password">
+          <button type="button" id="toggle-np2" class="pw-eye" aria-label="Toggle password">👁️</button>
+        </div>
+      </label>
+      <button class="p" id="save-pw-btn" style="width:100%;margin-top:16px">Save password & Sign in / حفظ ومتابعة</button>
+      <button type="button" id="cancel-setup-btn" class="sm" style="width:100%;margin-top:8px">Back to sign in / رجوع</button>
+    </div>
     <div id="le" class="bad" role="alert" style="margin-top:10px;text-align:center"></div>
   </div>
 </div>

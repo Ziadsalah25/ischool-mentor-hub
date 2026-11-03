@@ -1,7 +1,7 @@
 import { S, ui, DN, E, E7, $, td, save, pushNotif, usr, tut, sch, inst, conf, mst, rows, exp } from "./state.js";
 import { isCloudConfigured, GOOGLE_CLIENT_ID } from "./config.js";
 import { callApi, loadBootstrap, loadDay } from "./api.js";
-import { initGoogleSignIn, resumeCloudSession, signOutCloud, loginWithPassword } from "./auth.js";
+import { initGoogleSignIn, resumeCloudSession, signOutCloud, loginWithPassword, setMemberPassword } from "./auth.js";
 import { LOGO_URL } from "./logo.js";
 import { getLang, setLang, applyDir, tr } from "./i18n.js";
 import { dash } from "./views/dash.js";
@@ -333,6 +333,13 @@ document.addEventListener("click", async e => {
       if (cloud) await callApi("update_member", { id, active: !!nextOn });
       u.on = nextOn;
       return render();
+    }
+
+    if (a == "pwreset") {
+      if (cloud) {
+        await callApi("reset_member_password", { id });
+        return flash("Password reset. Member will set a new password on next login.");
+      }
     }
 
     if (a == "pw") {
@@ -667,6 +674,8 @@ $("lg").onclick = async () => {
     emailOrUser = "ziadmohamedsalah63@gmail.com";
   }
 
+  let pendingSetupEmail = "";
+
   const cloud = isCloudConfigured();
   if (cloud) {
     const lgBtn = $("lg");
@@ -674,8 +683,19 @@ $("lg").onclick = async () => {
     lgBtn.disabled = true;
     lgBtn.textContent = tr("Signing in...");
     try {
-      const user = await loginWithPassword(emailOrUser, pass);
-      ui.me = user;
+      const res = await loginWithPassword(emailOrUser, pass);
+      if (res && res.needs_setup) {
+        pendingSetupEmail = res.email;
+        if ($("demo-login-box")) $("demo-login-box").hidden = true;
+        if ($("google-login-box")) $("google-login-box").hidden = true;
+        if ($("setup-password-box")) $("setup-password-box").hidden = false;
+        if ($("setup-name")) $("setup-name").textContent = res.name || res.email;
+        if ($("np1")) $("np1").value = "";
+        if ($("np2")) $("np2").value = "";
+        if (errEl) errEl.textContent = "";
+        return;
+      }
+      ui.me = res;
       ui.tab = "";
       ui.mv = null;
       ui.showNotifs = false;
@@ -714,6 +734,67 @@ if (pwToggle) {
     const isPw = input.type === "password";
     input.type = isPw ? "text" : "password";
     pwToggle.textContent = isPw ? "🙈" : "👁️";
+  };
+}
+
+const bindEye = (btnId, inputId) => {
+  const btn = $(btnId);
+  const inp = $(inputId);
+  if (btn && inp) {
+    btn.onclick = () => {
+      const isPw = inp.type === "password";
+      inp.type = isPw ? "text" : "password";
+      btn.textContent = isPw ? "🙈" : "👁️";
+    };
+  }
+};
+bindEye("toggle-np1", "np1");
+bindEye("toggle-np2", "np2");
+
+if ($("save-pw-btn")) {
+  $("save-pw-btn").onclick = async () => {
+    const p1 = ($("np1") ? $("np1").value : "").trim();
+    const p2 = ($("np2") ? $("np2").value : "").trim();
+    const errEl = $("le");
+    if (errEl) errEl.textContent = "";
+
+    if (!p1 || p1.length < 6) {
+      if (errEl) errEl.textContent = tr("Password must be at least 6 characters.");
+      return;
+    }
+    if (p1 !== p2) {
+      if (errEl) errEl.textContent = tr("Passwords do not match.");
+      return;
+    }
+
+    const btn = $("save-pw-btn");
+    btn.disabled = true;
+    btn.textContent = tr("Saving...");
+    try {
+      const email = ($("lu") ? $("lu").value.trim().toLowerCase() : "");
+      const user = await setMemberPassword(email, p1);
+      if ($("setup-password-box")) $("setup-password-box").hidden = true;
+      if ($("demo-login-box")) $("demo-login-box").hidden = false;
+      ui.me = user;
+      ui.tab = "";
+      ui.mv = null;
+      ui.showNotifs = false;
+      render();
+    } catch (err) {
+      if (errEl) errEl.textContent = err.message || tr("Failed to set password.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = tr("Save password & Sign in / حفظ ومتابعة");
+    }
+  };
+}
+
+if ($("cancel-setup-btn")) {
+  $("cancel-setup-btn").onclick = () => {
+    if ($("setup-password-box")) $("setup-password-box").hidden = true;
+    if ($("demo-login-box")) $("demo-login-box").hidden = false;
+    const errEl = $("le");
+    if (errEl) errEl.textContent = "";
   };
 }
 

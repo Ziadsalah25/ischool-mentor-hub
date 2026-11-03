@@ -236,10 +236,46 @@ function doPost(e) {
         return jsonResponse({ ok: false, error: "Invalid credentials or account is not active.", code: "NOT_AUTHORIZED" });
       }
       const storedPass = String(row.password || "").trim();
-      const valid = storedPass ? (storedPass === pass) : (pass === "ischool123" || pass === "pass1234");
-      if (!valid) {
+      if (!storedPass) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            needs_setup: true,
+            id: Number(row.id),
+            name: row.name,
+            email: row.email
+          }
+        });
+      }
+      if (storedPass !== pass) {
         return jsonResponse({ ok: false, error: "Invalid email or password.", code: "INVALID_CREDENTIALS" });
       }
+      const token = "tok:" + row.id + ":" + row.email + ":" + Date.now();
+      const user = {
+        id: Number(row.id),
+        email: row.email,
+        name: row.name,
+        role: row.role,
+        active: true
+      };
+      return jsonResponse({ ok: true, data: { token, user } });
+    }
+
+    if (action === "set_member_password") {
+      const email = String(body.email || "").toLowerCase().trim();
+      const newPassword = String(body.password || "").trim();
+      if (!email || !newPassword || newPassword.length < 6) {
+        return jsonResponse({ ok: false, error: "Password must be at least 6 characters." });
+      }
+      const memSheet = getOrCreateSheet(ss, "members", TABS.members);
+      let members = readTable(ss, "members");
+      const row = members.find(m => String(m.email).toLowerCase().trim() === email && Number(m.active) === 1);
+      if (!row) {
+        return jsonResponse({ ok: false, error: "Account not found or inactive." });
+      }
+      memSheet.getRange(row._row, 9).setValue(newPassword);
+      row.password = newPassword;
+
       const token = "tok:" + row.id + ":" + row.email + ":" + Date.now();
       const user = {
         id: Number(row.id),
@@ -464,10 +500,19 @@ function doPost(e) {
         return jsonResponse({ ok: false, error: "That email is already registered." });
       }
       const id = nextId(members);
-      const pass = String(body.password || "ischool123").trim();
+      // New member starts with empty password by default -> prompts first-time setup
+      const pass = String(body.password || "").trim();
       memSheet.appendRow([id, email, name, role, 1, "", "", new Date().toISOString(), pass]);
       sendAppNotification(ss, id, "Welcome to iSchool Mentor Hub! Your account has been activated.", "Welcome to iSchool Mentor Hub");
       return jsonResponse({ ok: true, data: { id, email, name, role, active: true, auth_user_id: null } });
+    }
+
+    if (action === "reset_member_password") {
+      if (caller.role !== "admin") return jsonResponse({ ok: false, error: "Admin only" });
+      const target = members.find(m => Number(m.id) === Number(body.id));
+      if (!target) return jsonResponse({ ok: false, error: "Member not found" });
+      memSheet.getRange(target._row, 9).setValue("");
+      return jsonResponse({ ok: true });
     }
 
     if (action === "update_member") {

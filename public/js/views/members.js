@@ -19,7 +19,7 @@ export function mn() {
           u =>
             `<div class="c"><div class="r"><div><b>${E(u.n)}</b> <span class="tg">${E(u.role)}</span><div class="m">${E(
               u.email || u.u
-            )} — ${u.auth_user_id ? "Signed in" : "Not signed in yet"}</div></div><div class="tb"><select data-c="mrole" data-id="${
+            )}</div></div><div class="tb"><select data-c="mrole" data-id="${
               u.id
             }" aria-label="Role" style="width:auto;min-width:110px">${opts(
               [
@@ -27,7 +27,7 @@ export function mn() {
                 ["admin", "Admin"]
               ],
               u.role
-            )}</select><button class="sm" data-a="onoff" data-id="${u.id}">${u.on ? E(tr("Disable")) : E(
+            )}</select><button class="sm" data-a="pwreset" data-id="${u.id}">${E(tr("Reset password"))}</button><button class="sm" data-a="onoff" data-id="${u.id}">${u.on ? E(tr("Disable")) : E(
               tr("Enable")
             )}</button></div></div></div>`
         )
