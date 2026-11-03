@@ -93,9 +93,7 @@ function renderNotifPanel() {
 
 export function render() {
   document.querySelectorAll("img.brand-logo").forEach(img => {
-    if (!img.getAttribute("src") || img.getAttribute("src") === "assets/logo.png") {
-      img.src = LOGO_URL;
-    }
+    img.src = LOGO_URL;
   });
   updateHeaderControls();
 
