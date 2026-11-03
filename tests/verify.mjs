@@ -246,6 +246,23 @@ assert(setupPw.ok === true && setupPw.data.token.startsWith("tok:"), "Password s
 const freshLoginAgain = postGs({ action: "login_password", email: "fresh@ischool.com", password: "freshpassword123" });
 assert(freshLoginAgain.ok === true && freshLoginAgain.data.user.role === "mentor", "Member can now log in with newly created password");
 
+// One-time only: setup must be rejected once a password exists (prevents account hijack)
+const hijack = postGs({ action: "set_member_password", email: "fresh@ischool.com", password: "attacker999" });
+assert(hijack.ok === false && hijack.code === "PASSWORD_ALREADY_SET", "Second password setup must be rejected");
+const stillOld = postGs({ action: "login_password", email: "fresh@ischool.com", password: "freshpassword123" });
+assert(stillOld.ok === true && stillOld.data.token, "Original password must remain valid after rejected setup");
+const noPrompt = postGs({ action: "login_password", email: "fresh@ischool.com", password: "" });
+assert(noPrompt.ok === false, "Member with password must not be prompted to set up again");
+
+// Uniqueness: email and name cannot be duplicated
+const dupEmail = postGs({ action: "add_member", idToken: goodPass.data.token, name: "Someone Else", email: "FRESH@ischool.com ", role: "mentor" });
+assert(dupEmail.ok === false && dupEmail.code === "DUPLICATE_EMAIL", "Duplicate email (case/space-insensitive) must be rejected");
+const dupName = postGs({ action: "add_member", idToken: goodPass.data.token, name: "  fresh   MENTOR ", email: "other@ischool.com", role: "mentor" });
+assert(dupName.ok === false && dupName.code === "DUPLICATE_NAME", "Duplicate name must be rejected");
+const backdoor = postGs({ action: "login_password", email: "admin", password: "admin123" });
+assert(backdoor.ok === false, "Weak fallback admin password must not work");
+console.log("PASS: One-time password setup, uniqueness and no-backdoor checks verified.");
+
 const resetPw = postGs({ action: "reset_member_password", idToken: goodPass.data.token, id: addFreshMember.data.id });
 assert(resetPw.ok === true, "Admin can reset member password");
 

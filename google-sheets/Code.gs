@@ -203,7 +203,7 @@ function doPost(e) {
 
       const isMasterAdmin = (
         (email === MASTER_EMAIL || email === "zaidmohamedsalah63@gmail.com" || email === "admin" || email === "ziad" || email === "zaid") &&
-        (pass === MASTER_PASS || pass === "admin123")
+        (pass === MASTER_PASS)
       );
 
       if (isMasterAdmin) {
@@ -231,7 +231,11 @@ function doPost(e) {
         return jsonResponse({ ok: true, data: { token, user } });
       }
 
-      const row = members.find(m => String(m.email).toLowerCase().trim() === email);
+      const matches = members.filter(m => String(m.email).toLowerCase().trim() === email);
+      if (matches.length > 1) {
+        return jsonResponse({ ok: false, error: "This email is duplicated in the members sheet. Ask the admin to remove the duplicate row." });
+      }
+      const row = matches[0];
       if (!row || Number(row.active) !== 1) {
         return jsonResponse({ ok: false, error: "Invalid credentials or account is not active.", code: "NOT_AUTHORIZED" });
       }
@@ -272,6 +276,15 @@ function doPost(e) {
       const row = members.find(m => String(m.email).toLowerCase().trim() === email && Number(m.active) === 1);
       if (!row) {
         return jsonResponse({ ok: false, error: "Account not found or inactive." });
+      }
+      // SECURITY: first-time setup is allowed ONLY while no password exists yet.
+      // Once set, the password can only be cleared by an admin ("Reset password").
+      if (String(row.password || "").trim()) {
+        return jsonResponse({
+          ok: false,
+          code: "PASSWORD_ALREADY_SET",
+          error: "Password is already set for this account. Ask the admin to reset it if you forgot it."
+        });
       }
       memSheet.getRange(row._row, 9).setValue(newPassword);
       row.password = newPassword;
@@ -496,13 +509,19 @@ function doPost(e) {
       const name = String(body.name || "").trim();
       const role = body.role === "admin" ? "admin" : "mentor";
       if (!email || !name) return jsonResponse({ ok: false, error: "Enter name and Google email." });
-      if (members.some(m => String(m.email).toLowerCase() === email)) {
-        return jsonResponse({ ok: false, error: "That email is already registered." });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return jsonResponse({ ok: false, error: "Enter a valid email address." });
+      }
+      const normName = s => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+      if (members.some(m => String(m.email).toLowerCase().trim() === email)) {
+        return jsonResponse({ ok: false, code: "DUPLICATE_EMAIL", error: "That email is already registered." });
+      }
+      if (members.some(m => normName(m.name) === normName(name))) {
+        return jsonResponse({ ok: false, code: "DUPLICATE_NAME", error: "A member with this name already exists." });
       }
       const id = nextId(members);
-      // New member starts with empty password by default -> prompts first-time setup
-      const pass = String(body.password || "").trim();
-      memSheet.appendRow([id, email, name, role, 1, "", "", new Date().toISOString(), pass]);
+      // New member starts with empty password -> prompted to create it on first login (one time only)
+      memSheet.appendRow([id, email, name, role, 1, "", "", new Date().toISOString(), ""]);
       sendAppNotification(ss, id, "Welcome to iSchool Mentor Hub! Your account has been activated.", "Welcome to iSchool Mentor Hub");
       return jsonResponse({ ok: true, data: { id, email, name, role, active: true, auth_user_id: null } });
     }
