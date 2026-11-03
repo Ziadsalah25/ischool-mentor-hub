@@ -1,6 +1,21 @@
 import { tr } from "./i18n.js";
 
-export const SL = ["08:00-09:30", "09:45-11:15", "11:30-13:00", "13:15-14:45"];
+export const SL = [
+  "08:00 AM - 09:00 AM",
+  "09:00 AM - 10:00 AM",
+  "10:00 AM - 11:00 AM",
+  "11:00 AM - 12:00 PM",
+  "12:00 PM - 01:00 PM",
+  "01:00 PM - 02:00 PM",
+  "02:00 PM - 03:00 PM",
+  "03:00 PM - 04:00 PM",
+  "04:00 PM - 05:00 PM",
+  "05:00 PM - 06:00 PM",
+  "06:00 PM - 07:00 PM",
+  "07:00 PM - 08:00 PM",
+  "08:00 PM - 09:00 PM",
+  "09:00 PM - 10:00 PM"
+];
 export const DN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const MC = ["#0A6CEB", "#D9560A", "#12894A", "#7C4DDB"];
 export const KEY = "mentor-hub-v3";
