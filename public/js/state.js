@@ -1,4 +1,5 @@
 import { tr } from "./i18n.js";
+import { SEED_TUTORS, SEED_SCHOOLS, SEED_TPL } from "./data_seed.js";
 
 export const SL = [
   "08:00 AM - 09:00 AM",
@@ -50,39 +51,14 @@ export const DEF = [
 ];
 
 export function seed() {
-  const users = [{ id: 1, u: "admin", p: "admin123", n: "Admin", role: "admin", on: 1 }].concat(
+  const users = [{ id: 1, u: "admin", p: "zizoms_2511", n: "Admin", role: "admin", on: 1 }].concat(
     [2, 3, 4, 5].map(i => ({ id: i, u: "mentor" + (i - 1), p: "pass1234", n: "Mentor " + (i - 1), role: "mentor", on: 1 }))
   );
-  const tutors = ["Omar Hassan", "Nada Ali", "Youssef Adel", "Mariam Samir", "Karim Fathy", "Salma Nabil", "Ahmed Tarek", "Hana Mostafa"].map(
-    (n, i) => ({ id: i + 1, n, ar: 0 })
-  );
-  const schools = ["Future Language School", "Al Nour International", "Cairo Modern School", "Sunrise Academy", "Horizon Schools", "Delta STEM School"].map(
-    (n, i) => ({ id: i + 1, n, own: [2, 3, 4, 5, 2, 3][i] })
-  );
-  const cls = ["Grade 4", "Grade 5", "Grade 6"],
-    tp = ["Scratch basics", "Python loops", "Web pages", "Robotics", "Game design"],
-    tpl = {};
-  schools.forEach((k, si) => {
-    tpl[k.id] = {};
-    for (let d = 0; d < 7; d++)
-      tpl[k.id][d] = (d > 4 ? [] : [0, 1]).map(e => {
-        const i = si * 2 + e;
-        return {
-          id: i + 1,
-          t: (i + (i >= 8 ? 1 : 0)) % 4,
-          cls: cls[(i + d) % 3],
-          tu: i == 5 ? 0 : (i % 8) + 1,
-          tp: tp[(i + d) % 5],
-          ef: "", // effective_from (empty = always active)
-          eu: ""  // effective_until (empty = no end date)
-        };
-      });
-  });
   return {
     users,
-    tutors,
-    schools,
-    tpl,
+    tutors: JSON.parse(JSON.stringify(SEED_TUTORS)),
+    schools: JSON.parse(JSON.stringify(SEED_SCHOOLS)),
+    tpl: JSON.parse(JSON.stringify(SEED_TPL)),
     over: {},
     reqs: [],
     rtpl: DEF,
@@ -91,7 +67,7 @@ export function seed() {
     mnote: {},
     mreqs: [],
     notifs: [
-      { id: 1, to: 1, txt: "Welcome to iSchool Mentor Hub! Check the new 7-day analytics & notifications.", dt: td(), rd: 0 }
+      { id: 1, to: 1, txt: "Welcome to iSchool Mentor Hub! All 30 full-time tutors, availability stats, and school schedules loaded.", dt: td(), rd: 0 }
     ]
   };
 }
@@ -100,7 +76,12 @@ export let S;
 try {
   S = JSON.parse(localStorage.getItem(KEY));
 } catch (e) {}
-if (!S || !S.users) S = seed();
+if (!S || !S.users || !S.tutors || S.tutors.length < 20 || !S.tutors[0]?.code) {
+  S = seed();
+  try {
+    localStorage.setItem(KEY, JSON.stringify(S));
+  } catch (e) {}
+}
 if (!S.notifs) S.notifs = [];
 
 export const ui = {
@@ -219,4 +200,143 @@ export function exp(R, name, flashFn) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   if (flashFn) flashFn("Export ready: " + name);
+}
+
+export function getTutorStats(tutor) {
+  if (!tutor) {
+    return {
+      schools: [],
+      schoolsCount: 0,
+      sessionsCount: 0,
+      occupiedSlots: 0,
+      totalWorkingSlots: 65,
+      availableSlots: 65,
+      occPct: 0,
+      availPct: 100,
+      schedule: []
+    };
+  }
+
+  const schedule = [];
+  const schoolsSet = new Set();
+  const tutorId = Number(tutor.id);
+
+  const vacationNames = new Set(
+    String(tutor.vac || tutor.vacationDays || "")
+      .toLowerCase()
+      .split(/[,/]+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+  );
+
+  const tpl = S.tpl || {};
+  Object.keys(tpl).forEach(schoolId => {
+    const schoolObj = S.schools.find(s => Number(s.id) === Number(schoolId));
+    const schoolName = schoolObj ? schoolObj.n : `School #${schoolId}`;
+    const schoolDays = tpl[schoolId] || {};
+
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      const daySessions = schoolDays[dayIdx] || [];
+      const dayName = DN[dayIdx] || `Day ${dayIdx}`;
+      daySessions.forEach(session => {
+        if (Number(session.tu) === tutorId) {
+          schoolsSet.add(schoolName);
+          schedule.push({
+            id: session.id,
+            day: dayName,
+            dayIndex: dayIdx,
+            slotIndex: session.t,
+            hour: SL[session.t] || `Slot ${session.t}`,
+            school: schoolName,
+            schoolId: Number(schoolId),
+            cls: session.cls || "",
+            tp: session.tp || "",
+            type: session.type || "I2S",
+            format: session.format || "Offline",
+            status: session.status || "Permanent"
+          });
+        }
+      });
+    }
+  });
+
+  const vacDaysCount = Math.min(6, Math.max(0, vacationNames.size));
+  const workingDays = Math.max(1, 7 - vacDaysCount);
+  const totalWorkingSlots = workingDays * 13;
+  const occupiedSlots = schedule.length;
+  const availableSlots = Math.max(0, totalWorkingSlots - occupiedSlots);
+  const occPct = totalWorkingSlots > 0 ? Math.min(100, Math.round((occupiedSlots / totalWorkingSlots) * 100)) : 0;
+  const availPct = Math.max(0, 100 - occPct);
+
+  schedule.sort((a, b) => (a.dayIndex - b.dayIndex) || (a.slotIndex - b.slotIndex));
+
+  return {
+    schools: Array.from(schoolsSet),
+    schoolsCount: schoolsSet.size,
+    sessionsCount: schedule.length,
+    totalWorkingSlots,
+    occupiedSlots,
+    availableSlots,
+    occPct,
+    availPct,
+    schedule
+  };
+}
+
+export function findSubstitutes({ dayIndex, slotIndex, gov, lang }) {
+  const targetDay = Number(dayIndex);
+  const targetSlot = Number(slotIndex);
+  const dayName = (DN[targetDay] || "").toLowerCase();
+  const tpl = S.tpl || {};
+
+  const candidates = [];
+
+  (S.tutors || []).filter(t => !t.ar).forEach(tutor => {
+    const tutorId = Number(tutor.id);
+    const vacDays = String(tutor.vac || tutor.vacationDays || "")
+      .toLowerCase()
+      .split(/[,/]+/)
+      .map(s => s.trim());
+
+    const isVacation = vacDays.includes(dayName);
+
+    let isBusyAtSlot = false;
+    let conflictSchool = "";
+    Object.keys(tpl).forEach(sId => {
+      const list = tpl[sId]?.[targetDay] || [];
+      list.forEach(sess => {
+        if (Number(sess.tu) === tutorId && Number(sess.t) === targetSlot) {
+          isBusyAtSlot = true;
+          const sObj = S.schools.find(s => Number(s.id) === Number(sId));
+          conflictSchool = sObj ? sObj.n : `School #${sId}`;
+        }
+      });
+    });
+
+    const stats = getTutorStats(tutor);
+
+    let matchScore = 0;
+    const tutorGov = tutor.gov || tutor.governorate || "";
+    const tutorLang = tutor.lang || tutor.language || "";
+    if (gov && tutorGov && tutorGov.toLowerCase() === gov.toLowerCase()) matchScore += 2;
+    if (lang && tutorLang && tutorLang.toLowerCase() === lang.toLowerCase()) matchScore += 1;
+
+    candidates.push({
+      tutor,
+      stats,
+      isVacation,
+      isBusyAtSlot,
+      conflictSchool,
+      isAvailable: !isVacation && !isBusyAtSlot,
+      matchScore
+    });
+  });
+
+  candidates.sort((a, b) => {
+    if (a.isAvailable !== b.isAvailable) return a.isAvailable ? -1 : 1;
+    if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
+    return b.stats.availPct - a.stats.availPct;
+  });
+
+  return candidates;
 }

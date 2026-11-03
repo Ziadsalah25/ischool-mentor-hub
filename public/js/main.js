@@ -373,23 +373,163 @@ document.addEventListener("click", async e => {
     }
 
     // Tutors
-    if (a == "addt") {
-      const n = $("tn").value.trim();
+    if (a == "addt" || a === "tut_save_new") {
+      const n = ($("at-name")?.value || $("tn")?.value || "").trim();
       if (!n) return flash("Enter a name.");
+      const code = ($("at-code")?.value || "").trim() || `T-${Math.floor(1000 + Math.random() * 9000)}`;
+      const phone = ($("at-phone")?.value || "").trim();
+      const email = ($("at-email")?.value || "").trim();
+      const gov = ($("at-gov")?.value || "").trim() || "Cairo";
+      const area = ($("at-area")?.value || "").trim();
+      const lang = $("at-lang")?.value || "Arabic";
+      const vac = ($("at-vac")?.value || "").trim() || "Friday, Saturday";
+
+      const newTutor = {
+        id: Date.now(),
+        code,
+        n,
+        name: n,
+        phone,
+        email,
+        gov,
+        governorate: gov,
+        area,
+        lang,
+        language: lang,
+        vac,
+        vacationDays: vac,
+        type: "Full Time",
+        ar: 0
+      };
+
       if (cloud) {
-        const row = await callApi("add_tutor", { name: n });
-        S.tutors.push({ id: row.id, n: row.name, ar: 0 });
-      } else {
-        S.tutors.push({ id: Date.now(), n, ar: 0 });
+        try {
+          const row = await callApi("add_tutor", { name: n, code, phone, email, governorate: gov, language: lang, vacation_days: vac });
+          if (row?.id) newTutor.id = row.id;
+        } catch (err) {}
       }
-      return flash(n + " added.");
+      S.tutors.unshift(newTutor);
+      ui.tutAddOpen = false;
+      save();
+      return flash("Tutor " + n + " added successfully.");
     }
 
-    if (a == "art") {
-      const t = tut(id);
-      if (cloud) await callApi("toggle_tutor", { id });
-      t.ar = t.ar ? 0 : 1;
+    if (a === "tut_toggle_sub_finder") {
+      if (!ui.tutFilter) ui.tutFilter = {};
+      ui.tutFilter.subFinder = !ui.tutFilter.subFinder;
       return render();
+    }
+
+    if (a === "tut_open_add") {
+      ui.tutAddOpen = true;
+      return render();
+    }
+
+    if (a === "tut_cancel_add") {
+      ui.tutAddOpen = false;
+      return render();
+    }
+
+    if (a === "tut_toggle_sched") {
+      if (!ui.tutFilter) ui.tutFilter = {};
+      ui.tutFilter.expandedSchedule = ui.tutFilter.expandedSchedule === id ? null : id;
+      return render();
+    }
+
+    if (a === "tut_toggle_edit") {
+      if (!ui.tutFilter) ui.tutFilter = {};
+      ui.tutFilter.editingTutor = ui.tutFilter.editingTutor === id ? null : id;
+      return render();
+    }
+
+    if (a === "tut_save_edit") {
+      const t = tut(id);
+      if (!t) return;
+      t.n = ($(`ed-name-${id}`)?.value || "").trim() || t.n;
+      t.name = t.n;
+      t.phone = ($(`ed-phone-${id}`)?.value || "").trim() || t.phone;
+      t.email = ($(`ed-email-${id}`)?.value || "").trim() || t.email;
+      t.gov = ($(`ed-gov-${id}`)?.value || "").trim() || t.gov;
+      t.governorate = t.gov;
+      t.lang = $(`ed-lang-${id}`)?.value || t.lang;
+      t.language = t.lang;
+      t.vac = ($(`ed-vac-${id}`)?.value || "").trim() || t.vac;
+      t.vacationDays = t.vac;
+      ui.tutFilter.editingTutor = null;
+      save();
+      return flash(`Updated availability & details for ${t.n}`);
+    }
+
+    if (a === "tut_toggle_assign") {
+      if (!ui.tutFilter) ui.tutFilter = {};
+      ui.tutFilter.assigningTutor = ui.tutFilter.assigningTutor === id ? null : id;
+      return render();
+    }
+
+    if (a === "tut_submit_assign") {
+      const t = tut(id);
+      if (!t) return;
+      const schoolId = +$(`as-school-${id}`).value;
+      const dayIdx = +$(`as-day-${id}`).value;
+      const slotIdx = +$(`as-slot-${id}`).value;
+      const sessType = $(`as-type-${id}`)?.value || "I2S";
+      if (!S.tpl[schoolId]) S.tpl[schoolId] = { 0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[] };
+      if (!S.tpl[schoolId][dayIdx]) S.tpl[schoolId][dayIdx] = [];
+      const schObj = sch(schoolId);
+      const newSession = {
+        id: Date.now(),
+        t: slotIdx,
+        tu: id,
+        cls: `${schObj?.n || "School"} Group`,
+        tp: `${sessType} Session`,
+        type: sessType,
+        format: "Offline",
+        status: "Permanent",
+        ef: "",
+        eu: ""
+      };
+      S.tpl[schoolId][dayIdx].push(newSession);
+      ui.tutFilter.assigningTutor = null;
+      save();
+      return flash(`Assigned ${t.n} to ${schObj?.n} on ${DN[dayIdx]}`);
+    }
+
+    if (a === "tut_quick_assign") {
+      const tutorId = +b.dataset.id;
+      const day = +b.dataset.day;
+      const slot = +b.dataset.slot;
+      if (!ui.tutFilter) ui.tutFilter = {};
+      ui.tutFilter.assigningTutor = tutorId;
+      render();
+      setTimeout(() => {
+        const dEl = $(`as-day-${tutorId}`);
+        const sEl = $(`as-slot-${tutorId}`);
+        if (dEl) dEl.value = day;
+        if (sEl) sEl.value = slot;
+      }, 50);
+      return;
+    }
+
+    if (a === "tut_remove_sess") {
+      const schoolId = +b.dataset.school;
+      const dayIdx = +b.dataset.day;
+      const sessId = +b.dataset.sess;
+      if (S.tpl[schoolId]?.[dayIdx]) {
+        S.tpl[schoolId][dayIdx] = S.tpl[schoolId][dayIdx].filter(s => s.id !== sessId);
+        save();
+        return flash("Session removed from tutor schedule.");
+      }
+      return;
+    }
+
+    if (a == "art" || a === "tut_archive") {
+      const t = tut(id);
+      if (t) {
+        if (cloud) await callApi("toggle_tutor", { id });
+        t.ar = t.ar ? 0 : 1;
+        save();
+        return render();
+      }
     }
 
     // Daily reports & Report form (+ notify admin on submission)
@@ -503,9 +643,35 @@ document.addEventListener("click", async e => {
 });
 
 // Single merged change dispatcher
+document.addEventListener("input", e => {
+  if (e.target.id === "tut-search") {
+    if (!ui.tutFilter) ui.tutFilter = {};
+    ui.tutFilter.search = e.target.value;
+    render();
+  }
+});
+
 document.addEventListener("change", async e => {
   const t = e.target;
   const cloud = isCloudConfigured();
+
+  if (t.id === "tut-search" || t.id === "tut-f-gov" || t.id === "tut-f-lang" || t.id === "tut-f-avail") {
+    if (!ui.tutFilter) ui.tutFilter = {};
+    if (t.id === "tut-search") ui.tutFilter.search = t.value;
+    if (t.id === "tut-f-gov") ui.tutFilter.gov = t.value;
+    if (t.id === "tut-f-lang") ui.tutFilter.lang = t.value;
+    if (t.id === "tut-f-avail") ui.tutFilter.avail = t.value;
+    return render();
+  }
+
+  if (t.dataset.c?.startsWith("sub_f_")) {
+    if (!ui.tutFilter) ui.tutFilter = {};
+    if (t.dataset.c === "sub_f_day") ui.tutFilter.subDay = +t.value;
+    if (t.dataset.c === "sub_f_slot") ui.tutFilter.subSlot = +t.value;
+    if (t.dataset.c === "sub_f_gov") ui.tutFilter.subGov = t.value;
+    if (t.dataset.c === "sub_f_lang") ui.tutFilter.subLang = t.value;
+    return render();
+  }
 
   if (t.id == "dt") {
     ui.date = t.value || td();

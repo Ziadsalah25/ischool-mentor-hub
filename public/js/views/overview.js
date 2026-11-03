@@ -1,4 +1,4 @@
-import { S, td, lastNDates, acc, inst, chip, E } from "../state.js";
+import { S, td, lastNDates, acc, inst, chip, E, getTutorStats } from "../state.js";
 import { tr } from "../i18n.js";
 
 export function ov() {
@@ -41,6 +41,19 @@ export function ov() {
   const overallCovPct = totalScheduled7d ? Math.round((withTutor7d / totalScheduled7d) * 100) : 100;
   const overallRepPct = expectedReports7d ? Math.round((completedReports7d / expectedReports7d) * 100) : 100;
 
+  // Full-timers capacity & availability analytics
+  let totalWorkSlots = 0, totalOccSlots = 0;
+  const govCounts = {};
+  (S.tutors || []).filter(t => !t.ar).forEach(t => {
+    const st = getTutorStats(t);
+    totalWorkSlots += st.totalWorkingSlots;
+    totalOccSlots += st.occupiedSlots;
+    const g = t.gov || t.governorate || "Other";
+    govCounts[g] = (govCounts[g] || 0) + 1;
+  });
+  const overallTutorOcc = totalWorkSlots > 0 ? Math.min(100, Math.round((totalOccSlots / totalWorkSlots) * 100)) : 0;
+  const overallTutorAvail = Math.max(0, 100 - overallTutorOcc);
+
   return `<h2>${E(tr("Overview"))}</h2><div class="g g4"><div class="k"><b>${mentors.length}</b><span>${E(
     tr("Mentors")
   )}</span></div><div class="k"><b>${S.schools.length}</b><span>${E(tr("Schools"))}</span></div><div class="k"><b>${
@@ -48,6 +61,38 @@ export function ov() {
   }</b><span>${E(tr("Tutors"))}</span></div><div class="k"><b>${
     S.reqs.filter(r => r.st == "pending").length
   }</b><span>${E(tr("Pending requests"))}</span></div></div>
+
+  <!-- Tutor Capacity & Occupation Dashboard -->
+  <h2>👨‍🏫 ${E(tr("Full-Timers Availability & Capacity / لوحة تفرغ المدربين"))}</h2>
+  <div class="g g4">
+    <div class="k">
+      <b style="color:var(--good,#0b8a4b)">${overallTutorAvail}%</b>
+      <span>${E(tr("Overall Availability % / نسبة التفرغ الكلية"))}</span>
+      <div class="pb"><i style="width:${overallTutorAvail}%;background:var(--good)"></i></div>
+    </div>
+    <div class="k">
+      <b style="color:var(--orange,#ff7a1a)">${overallTutorOcc}%</b>
+      <span>${E(tr("Overall Occupation % / نسبة الإشغال الكلية"))}</span>
+      <div class="pb"><i style="width:${overallTutorOcc}%;background:var(--orange)"></i></div>
+    </div>
+    <div class="k">
+      <b>${totalOccSlots}</b>
+      <span>${E(tr("Total Sessions Assigned"))}</span>
+    </div>
+    <div class="k">
+      <b>${S.tutors.filter(t => !t.ar).length}</b>
+      <span>${E(tr("Active Full-Time Tutors"))}</span>
+    </div>
+  </div>
+
+  <div class="c" style="margin-bottom:16px">
+    <b>📍 ${E(tr("Tutors Distribution by Governorate / توزيع المدربين بالمحافظات"))}:</b>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      ${Object.entries(govCounts).sort((a,b)=>b[1]-a[1]).map(([gov, cnt]) => `
+        <span class="tg" style="font-size:13px;padding:4px 10px"><b>${E(gov)}</b>: ${cnt} tutors</span>
+      `).join("")}
+    </div>
+  </div>
 <div class="c sc"><table><tr><th>${E(tr("Mentor"))}</th><th>${E(tr("Schools"))}</th><th>${E(tr("Today"))}</th><th>${E(
     tr("Without tutor")
   )}</th><th></th></tr>${mentors

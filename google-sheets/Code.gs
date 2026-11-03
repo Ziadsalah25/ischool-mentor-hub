@@ -11,7 +11,7 @@
 
 const TABS = {
   members: ["id", "email", "name", "role", "active", "google_sub", "last_login_at", "created_at", "password"],
-  tutors: ["id", "name", "archived"],
+  tutors: ["id", "name", "archived", "code", "phone", "email", "governorate", "language", "vacation_days", "employment_type", "start_date", "area"],
   schools: ["id", "name", "owner_id"],
   template_sessions: ["id", "school_id", "weekday", "slot", "class_name", "topic", "tutor_id", "effective_from", "effective_until"],
   session_overrides: ["session_id", "on_date", "tutor_overridden", "tutor_id", "cancelled"],
@@ -364,6 +364,15 @@ function doPost(e) {
       const tutors = readTable(ss, "tutors").map(t => ({
         id: Number(t.id),
         name: t.name,
+        code: t.code || `T-${t.id}`,
+        phone: t.phone || "",
+        email: t.email || "",
+        governorate: t.governorate || "",
+        language: t.language || "Arabic",
+        vacation_days: t.vacation_days || "",
+        employment_type: t.employment_type || "Full Time",
+        start_date: t.start_date || "",
+        area: t.area || "",
         archived: Number(t.archived) === 1
       }));
       const schools = readTable(ss, "schools").map(s => ({
@@ -559,8 +568,32 @@ function doPost(e) {
       const rows = readTable(ss, "tutors");
       const id = nextId(rows);
       const name = String(body.name || "").trim();
-      sh.appendRow([id, name, 0]);
-      return jsonResponse({ ok: true, data: { id, name, archived: false } });
+      const code = String(body.code || `T-${id}`).trim();
+      const phone = String(body.phone || "").trim();
+      const email = String(body.email || "").trim();
+      const gov = String(body.governorate || "").trim();
+      const lang = String(body.language || "Arabic").trim();
+      const vac = String(body.vacation_days || "Friday, Saturday").trim();
+      const emp = String(body.employment_type || "Full Time").trim();
+      const sdate = String(body.start_date || "").trim();
+      const area = String(body.area || "").trim();
+      sh.appendRow([id, name, 0, code, phone, email, gov, lang, vac, emp, sdate, area]);
+      return jsonResponse({ ok: true, data: { id, name, code, archived: false } });
+    }
+
+    if (action === "update_tutor") {
+      const sh = getOrCreateSheet(ss, "tutors", TABS.tutors);
+      const rows = readTable(ss, "tutors");
+      const target = rows.find(t => Number(t.id) === Number(body.id));
+      if (!target) return jsonResponse({ ok: false, error: "Tutor not found" });
+      if (body.name !== undefined) sh.getRange(target._row, 2).setValue(String(body.name).trim());
+      if (body.code !== undefined) sh.getRange(target._row, 4).setValue(String(body.code).trim());
+      if (body.phone !== undefined) sh.getRange(target._row, 5).setValue(String(body.phone).trim());
+      if (body.email !== undefined) sh.getRange(target._row, 6).setValue(String(body.email).trim());
+      if (body.governorate !== undefined) sh.getRange(target._row, 7).setValue(String(body.governorate).trim());
+      if (body.language !== undefined) sh.getRange(target._row, 8).setValue(String(body.language).trim());
+      if (body.vacation_days !== undefined) sh.getRange(target._row, 9).setValue(String(body.vacation_days).trim());
+      return jsonResponse({ ok: true, data: { id: Number(target.id) } });
     }
 
     if (action === "toggle_tutor") {

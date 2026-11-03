@@ -25,6 +25,7 @@ const requiredFiles = [
   "public/assets/logo.png",
   "public/js/config.js",
   "public/js/logo.js",
+  "public/js/data_seed.js",
   "public/js/i18n.js",
   "public/js/state.js",
   "public/js/api.js",
