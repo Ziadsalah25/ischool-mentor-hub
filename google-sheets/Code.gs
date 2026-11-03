@@ -27,6 +27,38 @@ function cairoToday() {
   return Utilities.formatDate(new Date(), "Africa/Cairo", "yyyy-MM-dd");
 }
 
+function ensureSheetHeaders(sh, expectedHeaders) {
+  if (!sh || !expectedHeaders || !expectedHeaders.length) return;
+  const lastCol = Math.max(sh.getLastColumn(), 1);
+  const checkWidth = Math.max(lastCol, expectedHeaders.length);
+  const headerRange = sh.getRange(1, 1, 1, checkWidth);
+  const headerRow = (headerRange.getDisplayValues ? headerRange.getDisplayValues()[0] : []) || [];
+
+  for (let i = 0; i < expectedHeaders.length; i++) {
+    const expected = expectedHeaders[i];
+    const current = String(headerRow[i] || "").trim();
+    if (!current) {
+      sh.getRange(1, i + 1).setValue(expected).setFontWeight("bold").setBackground("#0A6CEB").setFontColor("#FFFFFF");
+      headerRow[i] = expected;
+    }
+  }
+}
+
+function getSheetColumnIndex(sh, colName, fallbackCol) {
+  const lastCol = Math.max(sh.getLastColumn(), 1);
+  const headerRange = sh.getRange(1, 1, 1, lastCol);
+  const headers = (headerRange.getDisplayValues ? headerRange.getDisplayValues()[0] : []) || [];
+  const target = String(colName || "").toLowerCase().trim();
+  for (let i = 0; i < headers.length; i++) {
+    if (String(headers[i] || "").toLowerCase().trim() === target) {
+      return i + 1;
+    }
+  }
+  const newCol = Math.max(lastCol, headers.length) + 1;
+  sh.getRange(1, newCol).setValue(colName).setFontWeight("bold").setBackground("#0A6CEB").setFontColor("#FFFFFF");
+  return newCol;
+}
+
 function getOrCreateSheet(ss, name, headers) {
   let sh = ss.getSheetByName(name);
   if (!sh) {
@@ -34,6 +66,8 @@ function getOrCreateSheet(ss, name, headers) {
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#0A6CEB").setFontColor("#FFFFFF");
     sh.setFrozenRows(1);
+  } else if (headers && headers.length) {
+    ensureSheetHeaders(sh, headers);
   }
   return sh;
 }
@@ -333,9 +367,13 @@ function doPost(e) {
         return jsonResponse({ ok: true, data: { token, user } });
       }
 
-      const matches = members.filter(m => String(m.email).toLowerCase().trim() === email);
+      const matches = members.filter(m => {
+        const mEmail = String(m.email || "").toLowerCase().trim();
+        const mName = String(m.name || "").toLowerCase().trim();
+        return mEmail === email || mName === email;
+      });
       if (matches.length > 1) {
-        return jsonResponse({ ok: false, error: "This email is duplicated in the members sheet. Ask the admin to remove the duplicate row." });
+        return jsonResponse({ ok: false, error: "This email or username is duplicated in the members sheet. Ask the admin to remove the duplicate row." });
       }
       const row = matches[0];
       if (!row || Number(row.active) !== 1) {
@@ -375,7 +413,11 @@ function doPost(e) {
       }
       const memSheet = getOrCreateSheet(ss, "members", TABS.members);
       let members = readTable(ss, "members");
-      const row = members.find(m => String(m.email).toLowerCase().trim() === email && Number(m.active) === 1);
+      const row = members.find(m => {
+        const mEmail = String(m.email || "").toLowerCase().trim();
+        const mName = String(m.name || "").toLowerCase().trim();
+        return (mEmail === email || mName === email) && Number(m.active) === 1;
+      });
       if (!row) {
         return jsonResponse({ ok: false, error: "Account not found or inactive." });
       }
@@ -388,7 +430,8 @@ function doPost(e) {
           error: "Password is already set for this account. Ask the admin to reset it if you forgot it."
         });
       }
-      memSheet.getRange(row._row, 9).setValue(newPassword);
+      const passCol = getSheetColumnIndex(memSheet, "password", 9);
+      memSheet.getRange(row._row, passCol).setValue(newPassword);
       row.password = newPassword;
 
       const token = "tok:" + row.id + ":" + row.email + ":" + Date.now();
@@ -651,7 +694,8 @@ function doPost(e) {
       if (caller.role !== "admin") return jsonResponse({ ok: false, error: "Admin only" });
       const target = members.find(m => Number(m.id) === Number(body.id));
       if (!target) return jsonResponse({ ok: false, error: "Member not found" });
-      memSheet.getRange(target._row, 9).setValue("");
+      const passCol = getSheetColumnIndex(memSheet, "password", 9);
+      memSheet.getRange(target._row, passCol).setValue("");
       return jsonResponse({ ok: true });
     }
 

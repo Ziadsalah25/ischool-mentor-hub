@@ -873,6 +873,8 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // Login & header buttons
+let pendingSetupEmail = "";
+
 $("lg").onclick = async () => {
   let emailOrUser = $("lu").value.trim().toLowerCase();
   const pass = $("lp").value;
@@ -888,8 +890,6 @@ $("lg").onclick = async () => {
   if (emailOrUser === "zaidmohamedsalah63@gmail.com" || emailOrUser === "admin" || emailOrUser === "ziad" || emailOrUser === "zaid") {
     emailOrUser = "ziadmohamedsalah63@gmail.com";
   }
-
-  let pendingSetupEmail = "";
 
   const cloud = isCloudConfigured();
   if (cloud) {
@@ -910,6 +910,7 @@ $("lg").onclick = async () => {
         if (errEl) errEl.textContent = "";
         return;
       }
+      pendingSetupEmail = "";
       ui.me = res;
       ui.tab = "";
       ui.mv = null;
@@ -986,10 +987,12 @@ if ($("save-pw-btn")) {
     btn.disabled = true;
     btn.textContent = tr("Saving...");
     try {
-      const email = ($("lu") ? $("lu").value.trim().toLowerCase() : "");
+      const email = (pendingSetupEmail || ($("lu") ? $("lu").value : "")).trim().toLowerCase();
       const user = await setMemberPassword(email, p1);
+      pendingSetupEmail = "";
       if ($("setup-password-box")) $("setup-password-box").hidden = true;
       if ($("demo-login-box")) $("demo-login-box").hidden = false;
+      if ($("lp")) $("lp").value = "";
       ui.me = user;
       ui.tab = "";
       ui.mv = null;
@@ -1006,6 +1009,7 @@ if ($("save-pw-btn")) {
 
 if ($("cancel-setup-btn")) {
   $("cancel-setup-btn").onclick = () => {
+    pendingSetupEmail = "";
     if ($("setup-password-box")) $("setup-password-box").hidden = true;
     if ($("demo-login-box")) $("demo-login-box").hidden = false;
     const errEl = $("le");

@@ -66,15 +66,35 @@ function makeSheet(name) {
     appendRow(row) {
       sheetsStore[name].push(row.map(x => String(x ?? "")));
     },
+    getLastColumn() {
+      return sheetsStore[name] && sheetsStore[name][0] ? sheetsStore[name][0].length : 0;
+    },
     getRange(r, c, numR = 1, numC = 1) {
       return {
         setFontWeight() { return this; },
         setBackground() { return this; },
         setFontColor() { return this; },
         setValue(val) {
-          if (sheetsStore[name][r - 1]) {
-            sheetsStore[name][r - 1][c - 1] = String(val ?? "");
+          while (sheetsStore[name].length < r) sheetsStore[name].push([]);
+          while (sheetsStore[name][r - 1].length < c) sheetsStore[name][r - 1].push("");
+          sheetsStore[name][r - 1][c - 1] = String(val ?? "");
+          return this;
+        },
+        getDisplayValues() {
+          const res = [];
+          for (let ri = 0; ri < numR; ri++) {
+            const rowVals = [];
+            const rIdx = r - 1 + ri;
+            for (let ci = 0; ci < numC; ci++) {
+              const cIdx = c - 1 + ci;
+              const v = (sheetsStore[name][rIdx] && sheetsStore[name][rIdx][cIdx] !== undefined)
+                ? String(sheetsStore[name][rIdx][cIdx])
+                : "";
+              rowVals.push(v);
+            }
+            res.push(rowVals);
           }
+          return res;
         }
       };
     },
@@ -235,8 +255,12 @@ const tokBoot = postGs({ action: "load_bootstrap", idToken: goodPass.data.token 
 assert(tokBoot.ok === true && tokBoot.data.me.email === "ziadmohamedsalah63@gmail.com", "Session token authentication must load bootstrap");
 
 // 2.8 Test First-Time Member Password Setup & Reset
+// Simulate legacy sheet where members tab only had 8 columns (no 'password' header)
+sheetsStore.members[0] = ["id", "email", "name", "role", "active", "google_sub", "last_login_at", "created_at"];
 const addFreshMember = postGs({ action: "add_member", idToken: goodPass.data.token, name: "Fresh Mentor", email: "fresh@ischool.com", role: "mentor" });
 assert(addFreshMember.ok === true, "Admin created fresh mentor");
+// Header must be self-healed by ensureSheetHeaders to include 'password'
+assert(sheetsStore.members[0].includes("password"), "members header must self-heal to include password column");
 
 const freshLogin = postGs({ action: "login_password", email: "fresh@ischool.com", password: "" });
 assert(freshLogin.ok === true && freshLogin.data.needs_setup === true, "Fresh member must be prompted to set password");
@@ -246,6 +270,7 @@ assert(setupPw.ok === true && setupPw.data.token.startsWith("tok:"), "Password s
 
 const freshLoginAgain = postGs({ action: "login_password", email: "fresh@ischool.com", password: "freshpassword123" });
 assert(freshLoginAgain.ok === true && freshLoginAgain.data.user.role === "mentor", "Member can now log in with newly created password");
+assert(!freshLoginAgain.data.needs_setup, "Member must NOT be asked to set password on subsequent login");
 
 // One-time only: setup must be rejected once a password exists (prevents account hijack)
 const hijack = postGs({ action: "set_member_password", email: "fresh@ischool.com", password: "attacker999" });
