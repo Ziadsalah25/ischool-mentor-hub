@@ -76,7 +76,7 @@ export let S;
 try {
   S = JSON.parse(localStorage.getItem(KEY));
 } catch (e) {}
-if (!S || !S.users || !S.tutors || S.tutors.length < 20 || !S.tutors[0]?.code) {
+if (!S || !S.users || !S.tutors || S.tutors.length < 20 || !S.tutors[0]?.code || S.tutors.some(t => t.n === "Omar Hassan" || t.name === "Omar Hassan" || t.n === "Nada Ali")) {
   S = seed();
   try {
     localStorage.setItem(KEY, JSON.stringify(S));

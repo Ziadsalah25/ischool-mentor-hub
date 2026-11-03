@@ -63,16 +63,16 @@ export function ov() {
   }</b><span>${E(tr("Pending requests"))}</span></div></div>
 
   <!-- Tutor Capacity & Occupation Dashboard -->
-  <h2>👨‍🏫 ${E(tr("Full-Timers Availability & Capacity / لوحة تفرغ المدربين"))}</h2>
+  <h2>👨‍🏫 ${E(tr("Full-Timers Availability & Capacity"))}</h2>
   <div class="g g4">
     <div class="k">
       <b style="color:var(--good,#0b8a4b)">${overallTutorAvail}%</b>
-      <span>${E(tr("Overall Availability % / نسبة التفرغ الكلية"))}</span>
+      <span>${E(tr("Overall Availability %"))}</span>
       <div class="pb"><i style="width:${overallTutorAvail}%;background:var(--good)"></i></div>
     </div>
     <div class="k">
       <b style="color:var(--orange,#ff7a1a)">${overallTutorOcc}%</b>
-      <span>${E(tr("Overall Occupation % / نسبة الإشغال الكلية"))}</span>
+      <span>${E(tr("Overall Occupation %"))}</span>
       <div class="pb"><i style="width:${overallTutorOcc}%;background:var(--orange)"></i></div>
     </div>
     <div class="k">
@@ -86,7 +86,7 @@ export function ov() {
   </div>
 
   <div class="c" style="margin-bottom:16px">
-    <b>📍 ${E(tr("Tutors Distribution by Governorate / توزيع المدربين بالمحافظات"))}:</b>
+    <b>📍 ${E(tr("Tutors Distribution by Governorate"))}:</b>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       ${Object.entries(govCounts).sort((a,b)=>b[1]-a[1]).map(([gov, cnt]) => `
         <span class="tg" style="font-size:13px;padding:4px 10px"><b>${E(gov)}</b>: ${cnt} tutors</span>

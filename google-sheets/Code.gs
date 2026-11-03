@@ -87,12 +87,72 @@ function setupDatabase() {
     memSheet.appendRow([1, ownerEmail, "Ziad Mohamed Salah", "admin", 1, "", "", new Date().toISOString(), "zizoms_2511"]);
   }
 
-  const tutSheet = ss.getSheetByName("tutors");
-  if (tutSheet.getLastRow() <= 1) {
-    ["Omar Hassan", "Nada Ali", "Youssef Adel", "Mariam Samir", "Karim Fathy", "Salma Nabil", "Ahmed Tarek", "Hana Mostafa"].forEach((n, i) => {
-      tutSheet.appendRow([i + 1, n, 0]);
+  seedAllTutors(ss, false);
+}
+
+const SEED_TUTORS_DATA = [
+  [1, "Mawada Arafat Radwan", 0, "T-7753", "10978565", "mawada731arafat@gmail.com", "Dakahlia", "English", "Tuesday, Wednesday", "Full Time", "10/1/2025", "Mansoura"],
+  [2, "Maymounah Abdulazeem", 0, "T-11668", "108212855", "maymounahabdulazeem@gmail.com", "Giza", "Arabic", "Saturday, Friday", "Full Time", "9/1/2025", "Faisal"],
+  [3, "Ghadeer Mamdouh", 0, "T-11625", "1099597153", "ghadeermamdouh49@gmail.com", "Sohag", "Arabic", "Wednesday, Thursday", "Full Time", "9/20/2025", "Sohag"],
+  [4, "Alaa Moustafa Hassen Mohamed", 0, "T-12339", "1022886806", "alaamoustafa511@gmail.com", "Gharbia", "Arabic", "Wednesday, Thursday", "Full Time", "10/20/2025", "Tanta"],
+  [5, "Menna-Tullah Mohsen Ali", 0, "T-11873", "1092028171", "mennaaboelewa@gmail.com", "Behira", "Arabic", "Thursday, Friday", "Full Time", "10/12/2025", "Kom hamada"],
+  [6, "Fatma Hussein Ali", 0, "T-11666", "1206898485", "fattmahusseinn@gmail.com", "Qalubiya", "Arabic", "Saturday, Friday", "Full Time", "9/17/2025", "Benha"],
+  [7, "Rana Fathy AbdElmeneim", 0, "T-11596", "1202400415", "ranafathey2003@gmail.com", "Alexandria", "Arabic", "Thursday, Friday", "Full Time", "8/3/2025", "Smouha"],
+  [8, "Mohamed Ahmed Abdel Fattah Abdel Hamid", 0, "T-11616", "1110142579", "mohamedahmedx831@gmail.com", "Alexandria", "Arabic", "Saturday, Friday", "Full Time", "8/27/2025", "el seyouf"],
+  [9, "Somaya Saeed Abdullah", 0, "T-11380", "1283633422", "somayasaeid75@gmail.com", "Alexandria", "Arabic", "Wednesday, Thursday", "Full Time", "8/20/2025", "Alexandria"],
+  [10, "Manar Ashraf Rashed", 0, "T-9237", "1204098508", "manar.ashraf000@gmail.com", "Alexandria", "English", "Saturday, Friday", "Full Time", "6/1/2025", "Miami, Alexandria"],
+  [11, "Naira Osama Lotfy Ibrahim", 0, "T-11729", "1154132034", "nairaosamaa6@gmail.com", "Qalubiya", "Arabic", "Sunday, Thursday", "Full Time", "9/28/2025", "Al-Qanater Al Khayriya"],
+  [12, "Nourhan Abdelghany Mohamed", 0, "T-11610", "1017370541", "mnourhan4526@gmail.com", "Alexandria", "Arabic", "Saturday, Friday", "Full Time", "8/27/2025", "أبوقير"],
+  [13, "Salma Basem Mahmoud", 0, "T-11589", "1119766119", "salma1basem@gmail.com", "Cairo", "Arabic", "Wednesday, Thursday", "Full Time", "9/17/2025", "Helwan,Cairo"],
+  [14, "Asmaa hamdallah Soliman", 0, "T-12503", "1061815945", "asmaelhawy93@gmail.com", "Assuit", "Arabic", "Wednesday, Thursday", "Full Time", "11/3/2025", "Sohag"],
+  [15, "Hagar Ahmed Mahmoud", 0, "T-11609", "1094039861", "hagarrayan123@gmail.com", "Cairo", "Arabic", "Thursday, Friday", "Full Time", "8/27/2025", "Cairo, ElsherokCity"],
+  [16, "Wesam Muhamed Hamdalla", 0, "T-12514", "1080138381", "whamdalla7@gmail.com", "Assuit", "Arabic", "Wednesday, Thursday", "Full Time", "11/3/2025", "city street - asyut"],
+  [17, "Laila Ebrahim", 0, "T-11676", "1063858975", "lailaebrahimtawfik@gmail.com", "Dakahlia", "English", "Thursday, Friday", "Full Time", "9/16/2025", "Sidi Beshr"],
+  [18, "Radwa Alaa Samy", 0, "T-11594", "1026567754", "alaaradwa987@gmail.com", "Giza", "Arabic", "Saturday, Friday", "Full Time", "9/17/2025", "6 October City"],
+  [19, "Mohamed Elsayed Tohamy", 0, "T-11577", "1061258725", "Mohammeedelsayeed08@gmail.com", "Cairo", "English", "Saturday, Friday", "Full Time", "9/10/2025", "المطريه"],
+  [20, "Seif eldin Ahmed diaa", 0, "T-12500", "1154424358", "seifeldin.zakaria@ejust.edu.eg", "Alexandria", "Arabic", "Saturday, Friday", "Full Time", "10/21/2025", "Alexandria"],
+  [21, "Aalaa Alaa Ashour", 0, "T-10313", "1101318891", "alaaalaaashour1507@gmail.com", "Qalubiya", "English", "Saturday, Friday", "Full Time", "10/1/2025", "Shubra El-Kheima"],
+  [22, "Ahmed Mohamed Khalil", 0, "T-11587", "0 127 899 9858", "ahmedmohamedkhalil201018@gmail.com", "Alexandria", "Arabic", "Saturday, Friday", "Full Time", "9/17/2025", "Moharem bek"],
+  [23, "Shehab Mohamed Abdo", 0, "T-12536", "1111697089", "shehababdo89@gmail.com", "Cairo", "English", "Thursday, Friday", "Full Time", "11/1/2025", "Badr-Elshorouk"],
+  [24, "Mahmoud Ibrahim", 0, "T-11721", "1141570077", "midomohamed1543@gmail.com", "Alexandria", "Arabic", "Thursday, Friday", "Full Time", "10/27/2025", "سموحة , سيدي جابر , الاسكندرية"],
+  [25, "Yassin Gamal Mohammed El-Hassan", 0, "T-12504", "1129693575", "eng.yassin.sultan@gmail.com", "Sohag", "Arabic", "Wednesday, Thursday", "Full Time", "11/2/2025", "Sohag"],
+  [26, "Ahmed Safy", 0, "T-26732", "1017565609", "ahmedsafy2906@gmail.com", "Giza", "English", "Saturday, Friday", "Full Time", "10/18/2026", "الوراق"],
+  [27, "Esraa Gomaa Ibrahim Ebead", 0, "T-19422", "1014032179", "esrgom972001@gmail.com", "Cairo", "English", "Saturday, Friday", "Full Time", "10/18/2026", "Badr"],
+  [28, "Aalaa Ahmad", 0, "T-26729", "1039347948", "alaasalama35111@gmail.com", "Monofya", "English", "Saturday, Friday", "Full Time", "9/20/2026", "Birket Al Sab'"],
+  [29, "Yasmeen Yasser Mohamed", 0, "T-11725", "01097734891", "yasmeenyasser611@gmail.com", "Cairo", "Arabic", "Tuesday, Wednesday", "Full Time", "9/28/2025", "Ain shams"],
+  [30, "Kyrollos Essam Talaat Ghali", 0, "T-2070", "1229105812", "kyrollose@gmail.com", "Alexandria", "English", "Saturday, Friday", "Full Time", "10/18/2026", "Ganaklis"]
+];
+
+function seedAllTutors(ss, force) {
+  const tutSheet = getOrCreateSheet(ss, "tutors", TABS.tutors);
+  const rows = readTable(ss, "tutors");
+  const hasOldDummy = rows.some(r => r.name === "Omar Hassan" || r.name === "Nada Ali" || r.name === "Hana Mostafa");
+  if (force || rows.length <= 1 || hasOldDummy) {
+    if (tutSheet.getLastRow() > 1) {
+      tutSheet.getRange(2, 1, tutSheet.getLastRow() - 1, tutSheet.getLastColumn()).clearContent();
+    }
+    SEED_TUTORS_DATA.forEach(r => {
+      tutSheet.appendRow(r);
     });
   }
+}
+
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu("Mentor Hub")
+      .addItem("🚀 Sync All 30 Tutors", "menuSeedAllTutors")
+      .addItem("⚙️ Setup Full Database", "setupDatabase")
+      .addToUi();
+  } catch (e) {}
+}
+
+function menuSeedAllTutors() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  seedAllTutors(ss, true);
+  try {
+    SpreadsheetApp.getUi().alert("✅ Successfully updated 'tutors' sheet with all 30 full-timer tutors!");
+  } catch (e) {}
 }
 
 function readTable(ss, name) {
@@ -352,7 +412,17 @@ function doPost(e) {
       return jsonResponse({ ok: true, data: caller });
     }
 
+    if (action === "sync_sheet_tutors") {
+      seedAllTutors(ss, true);
+      return jsonResponse({ ok: true, message: "All 30 tutors populated into sheet successfully" });
+    }
+
     if (action === "load_bootstrap") {
+      let rawTutors = readTable(ss, "tutors");
+      if (rawTutors.length <= 1 || rawTutors.some(t => t.name === "Omar Hassan" || t.name === "Nada Ali" || t.name === "Hana Mostafa")) {
+        seedAllTutors(ss, true);
+        rawTutors = readTable(ss, "tutors");
+      }
       const allMembers = readTable(ss, "members").map(m => ({
         id: Number(m.id),
         email: m.email,
@@ -361,7 +431,7 @@ function doPost(e) {
         active: Number(m.active) === 1,
         auth_user_id: m.google_sub || null
       }));
-      const tutors = readTable(ss, "tutors").map(t => ({
+      const tutors = rawTutors.map(t => ({
         id: Number(t.id),
         name: t.name,
         code: t.code || `T-${t.id}`,

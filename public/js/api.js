@@ -1,5 +1,6 @@
 import { BACKEND_URL, isCloudConfigured } from "./config.js";
 import { S, E7 } from "./state.js";
+import { SEED_TUTORS } from "./data_seed.js";
 
 const TOKEN_KEY = "mh-google-id-token";
 
@@ -52,11 +53,37 @@ export function applyBootstrapToState(data) {
     auth_user_id: m.auth_user_id || null
   }));
 
-  S.tutors = (data.tutors || []).map(t => ({
-    id: Number(t.id),
-    n: t.name,
-    ar: t.archived ? 1 : 0
-  }));
+  const serverTutors = (data.tutors || []).filter(t => t.name !== "Omar Hassan" && t.name !== "Nada Ali" && t.name !== "Hana Mostafa");
+  if (serverTutors.length > 0) {
+    S.tutors = serverTutors.map(t => {
+      const existing = (SEED_TUTORS || []).find(
+        st => st.code === t.code || st.id === Number(t.id) || (st.name && t.name && st.name.toLowerCase().trim() === t.name.toLowerCase().trim())
+      );
+      return {
+        id: Number(t.id),
+        n: t.name,
+        name: t.name,
+        code: t.code || (existing ? existing.code : `T-${t.id}`),
+        phone: t.phone || (existing ? existing.phone : ""),
+        email: t.email || (existing ? existing.email : ""),
+        gov: t.governorate || (existing ? existing.gov : ""),
+        governorate: t.governorate || (existing ? existing.governorate : ""),
+        lang: t.language || (existing ? existing.lang : "Arabic"),
+        language: t.language || (existing ? existing.language : "Arabic"),
+        vac: t.vacation_days || (existing ? existing.vac : ""),
+        vacationDays: t.vacation_days || (existing ? existing.vacationDays : ""),
+        type: t.employment_type || (existing ? existing.type : "Full Time"),
+        employmentType: t.employment_type || (existing ? existing.employmentType : "Full Time"),
+        startDate: t.start_date || (existing ? existing.startDate : ""),
+        area: t.area || (existing ? existing.area : ""),
+        ar: t.archived ? 1 : 0,
+        schools: existing ? existing.schools : [],
+        schedule: existing ? existing.schedule : []
+      };
+    });
+  } else {
+    S.tutors = JSON.parse(JSON.stringify(SEED_TUTORS));
+  }
 
   S.schools = (data.schools || []).map(s => ({
     id: Number(s.id),

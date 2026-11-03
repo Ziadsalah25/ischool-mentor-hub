@@ -1,4 +1,4 @@
-import { S, ui, DN, E, E7, $, td, save, pushNotif, usr, tut, sch, inst, conf, mst, rows, exp } from "./state.js";
+import { S, ui, DN, E, E7, $, td, save, pushNotif, usr, tut, sch, inst, conf, mst, rows, exp, getTutorStats } from "./state.js";
 import { isCloudConfigured, GOOGLE_CLIENT_ID } from "./config.js";
 import { callApi, loadBootstrap, loadDay } from "./api.js";
 import { initGoogleSignIn, resumeCloudSession, signOutCloud, loginWithPassword, setMemberPassword } from "./auth.js";
@@ -91,10 +91,33 @@ function renderNotifPanel() {
   </div>`;
 }
 
+export function applyI18nToStaticHtml() {
+  const isAr = getLang() === "ar";
+  const orCred = $("lbl-or-cred");
+  if (orCred) orCred.textContent = isAr ? "أو بالحساب" : "Or with credentials";
+  const np1 = $("lbl-np1-text");
+  if (np1) np1.textContent = isAr ? "كلمة المرور الجديدة" : "New password";
+  const np2 = $("lbl-np2-text");
+  if (np2) np2.textContent = isAr ? "تأكيد كلمة المرور" : "Confirm password";
+  const saveBtn = $("save-pw-btn");
+  if (saveBtn) saveBtn.textContent = isAr ? "حفظ ومتابعة" : "Save password & Sign in";
+  const cancelBtn = $("cancel-setup-btn");
+  if (cancelBtn) cancelBtn.textContent = isAr ? "رجوع" : "Back to sign in";
+  const setupMsg = $("lbl-setup-msg");
+  if (setupMsg) {
+    const nameEl = $("setup-name");
+    const name = nameEl ? nameEl.textContent : "";
+    setupMsg.innerHTML = isAr
+      ? `👋 أهلاً بك، <b id="setup-name">${E(name)}</b>! يرجى إنشاء وتأكيد كلمة مرور خاصة بحسابك لأول مرة.`
+      : `👋 Welcome, <b id="setup-name">${E(name)}</b>! Please create your password for the first time.`;
+  }
+}
+
 export function render() {
   document.querySelectorAll("img.brand-logo").forEach(img => {
     img.src = LOGO_URL;
   });
+  applyI18nToStaticHtml();
   updateHeaderControls();
 
   const cloud = isCloudConfigured();
@@ -412,6 +435,32 @@ document.addEventListener("click", async e => {
       ui.tutAddOpen = false;
       save();
       return flash("Tutor " + n + " added successfully.");
+    }
+
+    if (a === "tut_export_csv") {
+      const headers = ["ID", "Name", "Phone Number", "Governorate", "Employment Type", "Language", "Vacation Days", "Starting date with iSchool", "Email", "Area", "Assigned Schools", "Sessions/Week", "Availability %", "Occupation %"];
+      const tutorRows = [headers];
+      (S.tutors || []).forEach(t => {
+        const stats = getTutorStats(t);
+        tutorRows.push([
+          t.code || `T-${t.id}`,
+          t.n || t.name,
+          t.phone || "",
+          t.gov || t.governorate || "",
+          t.type || t.employmentType || "Full Time",
+          t.lang || t.language || "Arabic",
+          t.vac || t.vacationDays || "",
+          t.startDate || "",
+          t.email || "",
+          t.area || "",
+          stats.schools.join("; "),
+          stats.sessionsCount,
+          stats.availPct + "%",
+          stats.occPct + "%"
+        ]);
+      });
+      exp(tutorRows, "ischool_tutors_" + td() + ".csv", flash);
+      return;
     }
 
     if (a === "tut_toggle_sub_finder") {
@@ -950,7 +999,7 @@ if ($("save-pw-btn")) {
       if (errEl) errEl.textContent = err.message || tr("Failed to set password.");
     } finally {
       btn.disabled = false;
-      btn.textContent = tr("Save password & Sign in / حفظ ومتابعة");
+      btn.textContent = tr("Save password & Sign in");
     }
   };
 }

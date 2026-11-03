@@ -34,7 +34,7 @@ export function sc() {
                 S.users.filter(x => x.role == "mentor" && (x.on || x.id == k.own)).map(x => [x.id, x.n]),
                 k.own
               )}</select>
-              <button class="sm" data-a="et" data-id="${k.id}">${E(tr("Edit template / المواعيد"))}</button>
+              <button class="sm" data-a="et" data-id="${k.id}">${E(tr("Edit template"))}</button>
             </div>
           </div>`;
         }

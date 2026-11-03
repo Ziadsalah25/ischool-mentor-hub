@@ -66,8 +66,9 @@ export function tt() {
         <div class="m">${E(tr("Manage tutor schedules, vacation days, availability %, and school assignments."))}</div>
       </div>
       <div class="tb" style="margin:0">
+        <button class="sm" data-a="tut_export_csv">📥 ${E(tr("Export Tutors CSV"))}</button>
         <button class="sm${tf.subFinder ? " p" : ""}" data-a="tut_toggle_sub_finder">
-          🔍 ${tf.subFinder ? E(tr("Close Substitute Finder")) : E(tr("Smart Substitute Finder / باحث البديل"))}
+          🔍 ${tf.subFinder ? E(tr("Close Substitute Finder")) : E(tr("Smart Substitute Finder"))}
         </button>
         ${ui.me.role === "admin" ? `<button class="sm p" data-a="tut_open_add">➕ ${E(tr("Add Tutor"))}</button>` : ""}
       </div>
@@ -107,7 +108,7 @@ export function tt() {
       <div class="c" style="border:2px solid var(--blue);background:var(--card);box-shadow:var(--shadow-md);margin-bottom:20px;border-radius:14px">
         <div class="r" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px">
           <div>
-            <h3 style="margin:0;color:var(--blue)">🔍 ${E(tr("Smart Substitute Finder / الباحث الذكي عن بديل"))}</h3>
+            <h3 style="margin:0;color:var(--blue)">🔍 ${E(tr("Smart Substitute Finder"))}</h3>
             <div class="m" style="font-size:13px">${E(tr("Find tutors who are 100% FREE at this hour and NOT on their vacation day."))}</div>
           </div>
           <span class="tg" style="font-size:13px;font-weight:600">${candidates.filter(c => c.isAvailable).length} ${E(tr("Available now"))}</span>
@@ -150,7 +151,7 @@ export function tt() {
               </div>
               <div class="tb" style="margin:0">
                 ${tutor.phone ? `<a href="tel:${E(tutor.phone)}" class="sm button" style="text-decoration:none;padding:4px 8px;font-size:12px;border:1px solid var(--line);border-radius:99px">📞 ${E(tutor.phone)}</a>` : ""}
-                ${isAvailable ? `<button class="sm p" data-a="tut_quick_assign" data-id="${tutor.id}" data-day="${tf.subDay}" data-slot="${tf.subSlot}">Assign / تسكين</button>` : ""}
+                ${isAvailable ? `<button class="sm p" data-a="tut_quick_assign" data-id="${tutor.id}" data-day="${tf.subDay}" data-slot="${tf.subSlot}">${E(tr("Assign"))}</button>` : ""}
               </div>
             </div>
           `).join("")}
@@ -165,18 +166,18 @@ export function tt() {
       <div class="f" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
         <input id="tut-search" placeholder="🔍 ${E(tr("Search by name, code, phone, school..."))}" value="${E(tf.search)}" aria-label="Search">
         <select id="tut-f-gov" aria-label="Governorate">
-          <option value="">${E(tr("All Governorates / كل المحافظات"))}</option>
+          <option value="">${E(tr("All Governorates"))}</option>
           ${govs.map(g => `<option value="${E(g)}"${g === tf.gov ? " selected" : ""}>${E(g)}</option>`).join("")}
         </select>
         <select id="tut-f-lang" aria-label="Language">
-          <option value="">${E(tr("All Languages / كل اللغات"))}</option>
-          <option value="Arabic"${tf.lang === "Arabic" ? " selected" : ""}>Arabic (عربي)</option>
-          <option value="English"${tf.lang === "English" ? " selected" : ""}>English (إنجليزي)</option>
+          <option value="">${E(tr("All Languages"))}</option>
+          <option value="Arabic"${tf.lang === "Arabic" ? " selected" : ""}>${E(tr("Arabic"))}</option>
+          <option value="English"${tf.lang === "English" ? " selected" : ""}>${E(tr("English"))}</option>
         </select>
         <select id="tut-f-avail" aria-label="Availability">
-          <option value="">${E(tr("All Availabilities / كل نسب التفرغ"))}</option>
-          <option value="high"${tf.avail === "high" ? " selected" : ""}>🟢 Available (نسبة تفرغ عالية)</option>
-          <option value="busy"${tf.avail === "busy" ? " selected" : ""}>🟠 High workload (مشغول جداً)</option>
+          <option value="">${E(tr("All Availabilities"))}</option>
+          <option value="high"${tf.avail === "high" ? " selected" : ""}>🟢 ${E(tr("High Availability"))}</option>
+          <option value="busy"${tf.avail === "busy" ? " selected" : ""}>🟠 ${E(tr("High Workload"))}</option>
         </select>
       </div>
     </div>
@@ -186,7 +187,7 @@ export function tt() {
   if (ui.tutAddOpen) {
     h += `
       <div class="c" style="border:2px solid var(--good);border-radius:14px;padding:16px;margin-bottom:16px">
-        <h3 style="margin-top:0">➕ ${E(tr("Add New Full-Timer Tutor / إضافة مدرب جديد"))}</h3>
+        <h3 style="margin-top:0">➕ ${E(tr("Add New Full-Timer Tutor"))}</h3>
         <div class="f" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
           <label class="m">${E(tr("Full Name"))}<input id="at-name" placeholder="Name"></label>
           <label class="m">${E(tr("Code (e.g. T-8000)"))}<input id="at-code" placeholder="T-8000"></label>
@@ -254,7 +255,7 @@ export function tt() {
           <div class="g" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:center;background:var(--bg);padding:10px 14px;border-radius:10px;margin-bottom:10px">
             <div>
               <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-                <span><b>${E(tr("Availability / نسبة التفرغ"))}:</b> <span style="color:${availColor};font-weight:700">${stats.availPct}%</span></span>
+                <span><b>${E(tr("Availability"))}:</b> <span style="color:${availColor};font-weight:700">${stats.availPct}%</span></span>
                 <span class="m">${stats.availableSlots} slots free</span>
               </div>
               <div style="height:8px;background:var(--line);border-radius:99px;overflow:hidden">
@@ -264,7 +265,7 @@ export function tt() {
 
             <div>
               <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-                <span><b>${E(tr("Occupation / نسبة الإشغال"))}:</b> <span style="color:${occColor};font-weight:700">${stats.occPct}%</span></span>
+                <span><b>${E(tr("Occupation"))}:</b> <span style="color:${occColor};font-weight:700">${stats.occPct}%</span></span>
                 <span class="m">${stats.occupiedSlots} / ${stats.totalWorkingSlots} slots</span>
               </div>
               <div style="height:8px;background:var(--line);border-radius:99px;overflow:hidden">
@@ -316,7 +317,7 @@ export function tt() {
           <!-- Assign to School Drawer (when active) -->
           ${isAssigning ? `
             <div style="margin-top:14px;padding:14px;border:1px solid var(--blue);border-radius:10px;background:var(--card)">
-              <h4 style="margin:0 0 8px;color:var(--blue)">🏫 ${E(tr("Assign Tutor to School / إضافة المدرب لمدرسة"))}</h4>
+              <h4 style="margin:0 0 8px;color:var(--blue)">🏫 ${E(tr("Assign Tutor to School"))}</h4>
               <p class="m" style="font-size:13px;margin:0 0 10px">${E(tr("Choose a school and time to add a weekly session with this tutor:"))}</p>
               <div class="f" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
                 <label class="m">${E(tr("School"))}
@@ -339,7 +340,7 @@ export function tt() {
                 </label>
               </div>
               <div class="tb" style="margin-top:10px">
-                <button class="p sm" data-a="tut_submit_assign" data-id="${t.id}">Confirm Assignment / تسكين الحصة</button>
+                <button class="p sm" data-a="tut_submit_assign" data-id="${t.id}">${E(tr("Confirm Assignment"))}</button>
                 <button class="sm" data-a="tut_toggle_assign" data-id="${t.id}">Cancel</button>
               </div>
             </div>
@@ -348,19 +349,19 @@ export function tt() {
           <!-- Expanded Schedule Breakdown (when active) -->
           ${isExpanded ? `
             <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-              <h4 style="margin:0 0 8px">📋 ${E(tr("Weekly Sessions Detailed Schedule / جدول الحصص التفصيلي"))} (${stats.sessionsCount} sessions)</h4>
+              <h4 style="margin:0 0 8px">📋 ${E(tr("Weekly Sessions Detailed Schedule"))} (${stats.sessionsCount} ${E(tr("sessions"))})</h4>
               ${stats.schedule.length === 0 ? `<p class="m">${E(tr("No scheduled sessions yet for this tutor."))}</p>` : `
                 <div class="sc">
                   <table>
                     <thead>
                       <tr>
-                        <th>Day / اليوم</th>
-                        <th>Time / الميعاد</th>
-                        <th>School / المدرسة</th>
-                        <th>Type / النوع</th>
-                        <th>Format / الحضور</th>
-                        <th>Status / الحالة</th>
-                        <th>Action</th>
+                        <th>${E(tr("Day"))}</th>
+                        <th>${E(tr("Time"))}</th>
+                        <th>${E(tr("School"))}</th>
+                        <th>${E(tr("Type"))}</th>
+                        <th>${E(tr("Format"))}</th>
+                        <th>${E(tr("Status"))}</th>
+                        <th>${E(tr("Action"))}</th>
                       </tr>
                     </thead>
                     <tbody>

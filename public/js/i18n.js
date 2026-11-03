@@ -126,18 +126,88 @@ const AR = {
   "Report Completion Rate": "نسبة إكمال التقارير اليومية",
   "Total Scheduled (7d)": "إجمالي الحصص (7 أيام)",
   "Cancelled Sessions (7d)": "الحصص الملغاة (7 أيام)",
-  "Download full backup (JSON)": "تحميل نسخة احتياطية كاملة (JSON)"
+  "Download full backup (JSON)": "تحميل نسخة احتياطية كاملة (JSON)",
+  "Tutors & Full-Timers Availability": "تفرغ وسعة المدربين",
+  "Manage tutor schedules, vacation days, availability %, and school assignments.": "إدارة جداول المدربين، أيام الإجازات، نسبة التفرغ، وتسكين المدارس.",
+  "Close Substitute Finder": "إغلاق باحث البديل",
+  "Smart Substitute Finder": "الباحث الذكي عن بديل",
+  "Active Full-Timers": "المدربين النشطين (Full-Time)",
+  "Overall Availability %": "نسبة التفرغ الكلية",
+  "Overall Occupation %": "نسبة الإشغال الكلية",
+  "Total Sessions / Week": "إجمالي الحصص / أسبوعياً",
+  "Find tutors who are 100% FREE at this hour and NOT on their vacation day.": "البحث عن المدربين المتفرغين 100% في هذا الوقت وليسوا في يوم إجازتهم.",
+  "Available now": "متاح الآن",
+  "Time slot": "الفترة الزمنية",
+  "Governorate (optional)": "المحافظة (اختياري)",
+  "Language": "اللغة",
+  "All Governorates": "كل المحافظات",
+  "All Languages": "كل اللغات",
+  "Arabic": "عربي",
+  "English": "إنجليزي",
+  "High Availability": "نسبة تفرغ عالية",
+  "High Workload": "نسبة إشغال عالية",
+  "All Availabilities": "كل نسب التفرغ",
+  "Assign": "تسكين",
+  "Search by name, code, phone, school...": "بحث بالاسم، الكود، الهاتف، المدرسة...",
+  "Add New Full-Timer Tutor": "إضافة مدرب جديد",
+  "Full Name": "الاسم بالكامل",
+  "Code (e.g. T-8000)": "الكود (مثال: T-8000)",
+  "Phone (010...)": "الهاتف (010...)",
+  "Email": "البريد الإلكتروني",
+  "Governorate": "المحافظة",
+  "Area": "المنطقة",
+  "Weekly Vacation Days (e.g. Friday, Saturday)": "أيام الإجازة الأسبوعية (مثال: Friday, Saturday)",
+  "Save & Add Tutor": "حفظ وإضافة المدرب",
+  "Cancel": "إلغاء",
+  "No tutors match the selected filters.": "لا يوجد مدربون يطابقون خيارات البحث المحددة.",
+  "Hide Schedule": "إخفاء الجدول",
+  "Schedule": "الجدول",
+  "Edit Availability": "تعديل التفرغ",
+  "Assign School": "تسكين مدرسة",
+  "Availability": "نسبة التفرغ",
+  "Occupation": "نسبة الإشغال",
+  "Vacation Days": "أيام الإجازة",
+  "Phone": "الهاتف",
+  "Assigned Schools": "المدارس المسكنة",
+  "No schools assigned yet.": "لا توجد مدارس مسكنة حتى الآن.",
+  "Edit Tutor Profile & Availability": "تعديل ملف وتفرغ المدرب",
+  "Save Changes": "حفظ التعديلات",
+  "Assign Tutor to School": "إضافة المدرب لمدرسة",
+  "Choose a school and time to add a weekly session with this tutor:": "اختر المدرسة والميعاد لإضافة حصة أسبوعية لهذا المدرب:",
+  "Time Slot": "الميعاد",
+  "Session Type": "نوع الحصة",
+  "Confirm Assignment": "تسكين الحصة",
+  "Weekly Sessions Detailed Schedule": "جدول الحصص التفصيلي",
+  "sessions": "حصص",
+  "No scheduled sessions yet for this tutor.": "لا توجد حصص مجدولة لهذا المدرب حتى الآن.",
+  "Day": "اليوم",
+  "Time": "الميعاد",
+  "Type": "النوع",
+  "Format": "الحضور",
+  "Status": "الحالة",
+  "Action": "إجراء",
+  "Full-Timers Availability & Capacity": "لوحة تفرغ المدربين",
+  "Tutors Distribution by Governorate": "توزيع المدربين بالمحافظات",
+  "Export Tutors CSV": "تصدير المدربين (CSV)",
+  "Or with credentials": "أو بالحساب",
+  "Save password & Sign in": "حفظ ومتابعة",
+  "Back to sign in": "رجوع"
 };
 
+let currentLang = null;
+
 export function getLang() {
+  if (currentLang) return currentLang;
   try {
-    return localStorage.getItem(LANG_KEY) || "en";
+    currentLang = localStorage.getItem(LANG_KEY) || "en";
   } catch (e) {
-    return "en";
+    currentLang = "en";
   }
+  return currentLang;
 }
 
 export function setLang(lang) {
+  currentLang = lang;
   try {
     localStorage.setItem(LANG_KEY, lang);
   } catch (e) {}
@@ -145,6 +215,7 @@ export function setLang(lang) {
 }
 
 export function applyDir() {
+  if (typeof document === "undefined") return;
   const lang = getLang();
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";

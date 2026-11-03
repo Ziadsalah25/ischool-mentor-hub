@@ -19,7 +19,7 @@
       <div id="google-btn-container" style="display:flex;justify-content:center"></div>
       <div style="display:flex;align-items:center;margin:14px 0;gap:8px">
         <hr style="flex:1;border:none;border-top:1px solid var(--line)">
-        <span class="m" style="font-size:12px">Or with credentials / أو بالحساب</span>
+        <span class="m" id="lbl-or-cred" style="font-size:12px">Or with credentials</span>
         <hr style="flex:1;border:none;border-top:1px solid var(--line)">
       </div>
     </div>
@@ -37,23 +37,22 @@
     </div>
     <div id="setup-password-box" hidden>
       <div style="background:var(--warnbg);border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13.5px">
-        <span>👋 Welcome, <b id="setup-name"></b>! Please create your password for the first time.</span>
-        <div class="m" style="margin-top:4px">أهلاً بك! يرجى إنشاء وتأكيد كلمة مرور خاصة بحسابك لأول مرة.</div>
+        <span id="lbl-setup-msg">👋 Welcome, <b id="setup-name"></b>! Please create your password for the first time.</span>
       </div>
-      <label class="m">New password / كلمة المرور الجديدة
+      <label class="m" id="lbl-np1"><span id="lbl-np1-text">New password</span>
         <div class="pw-wrap">
           <input id="np1" type="password" placeholder="At least 6 characters" autocomplete="new-password">
           <button type="button" id="toggle-np1" class="pw-eye" aria-label="Toggle password">👁️</button>
         </div>
       </label>
-      <label class="m" style="margin-top:12px">Confirm password / تأكيد كلمة المرور
+      <label class="m" id="lbl-np2" style="margin-top:12px"><span id="lbl-np2-text">Confirm password</span>
         <div class="pw-wrap">
           <input id="np2" type="password" placeholder="Repeat password" autocomplete="new-password">
           <button type="button" id="toggle-np2" class="pw-eye" aria-label="Toggle password">👁️</button>
         </div>
       </label>
-      <button class="p" id="save-pw-btn" style="width:100%;margin-top:16px">Save password & Sign in / حفظ ومتابعة</button>
-      <button type="button" id="cancel-setup-btn" class="sm" style="width:100%;margin-top:8px">Back to sign in / رجوع</button>
+      <button class="p" id="save-pw-btn" style="width:100%;margin-top:16px">Save password & Sign in</button>
+      <button type="button" id="cancel-setup-btn" class="sm" style="width:100%;margin-top:8px">Back to sign in</button>
     </div>
     <div id="le" class="bad" role="alert" style="margin-top:10px;text-align:center"></div>
   </div>
