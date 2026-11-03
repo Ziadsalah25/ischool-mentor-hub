@@ -987,8 +987,8 @@ if ($("save-pw-btn")) {
     btn.disabled = true;
     btn.textContent = tr("Saving...");
     try {
-      const email = (pendingSetupEmail || ($("lu") ? $("lu").value : "")).trim().toLowerCase();
-      const user = await setMemberPassword(email, p1);
+      const targetEmail = (pendingSetupEmail || ($("lu") ? $("lu").value : "")).trim().toLowerCase();
+      const user = await setMemberPassword(targetEmail, p1);
       pendingSetupEmail = "";
       if ($("setup-password-box")) $("setup-password-box").hidden = true;
       if ($("demo-login-box")) $("demo-login-box").hidden = false;
