@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>iSchool Mentor Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<div id="login" hidden>
+  <div class="c">
+    <div class="logo"><img class="brand-logo" src="assets/logo.png" alt="iSchool"></div>
+    <h2 id="login-title" style="margin-top:0">Mentor Hub sign in</h2>
+    <div id="google-login-box" hidden style="margin:14px 0">
+      <div id="google-btn-container" style="display:flex;justify-content:center"></div>
+    </div>
+    <div id="demo-login-box">
+      <label id="lu-lbl" class="m">Username<input id="lu" autocomplete="username"></label>
+      <label id="lp-lbl" class="m" style="margin-top:8px">Password<input id="lp" type="password" autocomplete="current-password"></label>
+      <button class="p" id="lg" style="width:100%;margin-top:10px">Sign in</button>
+      <p class="m">Demo accounts: admin / admin123, mentor1 / pass1234 (mentor2 to mentor4 use the same password). Demo data is stored only in this browser.</p>
+    </div>
+    <div id="le" class="bad" role="alert" style="margin-top:8px"></div>
+  </div>
+</div>
+<div id="not-auth" hidden style="max-width:420px;margin:40px auto;padding:0 16px">
+  <div class="c" style="padding:20px;text-align:center">
+    <div class="logo" style="display:inline-flex;margin-bottom:14px"><img class="brand-logo" src="assets/logo.png" alt="iSchool"></div>
+    <h2 style="margin-top:0">Not authorized</h2>
+    <p class="m">Signed in as <b id="na-email"></b></p>
+    <p class="m">Ask the admin to add this Google email to Members.</p>
+    <button class="p" id="na-out" style="width:100%;margin-top:10px">Sign out</button>
+  </div>
+</div>
+<div id="app" hidden>
+  <header>
+    <div class="w hd">
+      <span class="logo"><img class="brand-logo" src="assets/logo.png" alt="iSchool"></span>
+      <div class="ctl">
+        <span id="who"></span>
+        <button id="ln" aria-label="Switch language">عربي</button>
+        <button id="th" aria-label="Switch theme"></button>
+        <button id="lo">Sign out</button>
+      </div>
+    </div>
+  </header>
+  <nav><div class="w" id="nav"></div></nav>
+  <main><div class="w" id="v"></div></main>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

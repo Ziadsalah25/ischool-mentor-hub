@@ -1,0 +1,48 @@
+:root{--blue:#0A6CEB;--orange:#FF7A1A;--yellow:#FFC61A;--bg:#F2F7FF;--card:#FFFFFF;--fg:#1B2559;--muted:#5B6585;--line:#D9E4F8;--head:#0A6CEB;--bad:#D92D20;--good:#0B8A4B;--warnbg:#FFF4D6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0B1230;--card:#131D45;--fg:#EAF0FF;--muted:#A5B2D8;--line:#27346B;--head:#0A4FB0;--bad:#FF8A80;--good:#4BD58D;--warnbg:#3A3115}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0B1230;--card:#131D45;--fg:#EAF0FF;--muted:#A5B2D8;--line:#27346B;--head:#0A4FB0;--bad:#FF8A80;--good:#4BD58D;--warnbg:#3A3115}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Outfit","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.45}
+.w{max-width:900px;margin:0 auto;padding:0 16px}
+header{background:var(--head);color:#fff;padding:10px 0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{background:#fff;border-radius:12px;padding:6px 12px;display:inline-flex}.logo img{height:34px;display:block}
+.ctl{display:flex;gap:8px;align-items:center;font-size:14px}
+select,input,textarea,button{font:inherit;color:var(--fg)}
+select,input,textarea{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+button{cursor:pointer;border:2px solid var(--line);background:var(--card);border-radius:99px;padding:7px 14px;font-weight:500;min-height:38px}
+button.p{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
+button.sm{padding:4px 10px;min-height:32px;font-size:14px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+header button{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;min-height:34px;padding:4px 12px}
+nav{background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav .w{display:flex;gap:4px}
+nav button{border:0;border-bottom:4px solid transparent;border-radius:0;background:none;padding:12px;color:var(--muted);white-space:nowrap}
+nav button[aria-current="true"]{color:var(--blue);border-bottom-color:var(--orange);font-weight:700}
+:root[data-theme="dark"] nav button[aria-current="true"]{color:#8DB9FF}
+main{padding:16px 0 50px}
+h2{font-size:22px;margin:20px 0 8px}h3{font-size:17px;margin:0 0 6px}
+.g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+@media(min-width:640px){.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.f{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.k b{display:block;font-size:28px;line-height:1.1}.k span{color:var(--muted);font-size:14px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
+.r{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.m{color:var(--muted);font-size:14px}
+.ch{display:inline-block;color:#fff;font-size:12px;font-weight:600;border-radius:99px;padding:1px 9px}
+.tg{display:inline-block;background:var(--warnbg);border:1px solid var(--orange);border-radius:99px;padding:0 9px;font-size:12px;margin-left:4px}
+[dir="rtl"] .tg{margin-left:0;margin-right:4px}
+.bad{color:var(--bad);font-weight:600;font-size:14px}.ok{color:var(--good);font-weight:600}
+.fl{background:var(--warnbg);border:2px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.f{display:grid;gap:8px;margin:8px 0}
+.tb{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.tb select{width:auto;flex:1;min-width:150px}
+label.m{display:block}label.m select,label.m input{margin-top:4px}
+#login{max-width:380px;margin:40px auto;padding:0 16px}
+#login .c{padding:20px}#login .logo{display:flex;justify-content:center;margin-bottom:16px;background:#fff;border:1px solid var(--line)}#login .logo img{height:56px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-top:1px solid var(--line)}th{color:var(--muted);font-weight:600}
+[dir="rtl"] th,[dir="rtl"] td{text-align:right}
+.sc{overflow-x:auto}
+

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>iSchool Mentor Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#0A6CEB;--orange:#FF7A1A;--yellow:#FFC61A;--bg:#F2F7FF;--card:#FFFFFF;--fg:#1B2559;--muted:#5B6585;--line:#D9E4F8;--head:#0A6CEB;--bad:#D92D20;--good:#0B8A4B;--warnbg:#FFF4D6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0B1230;--card:#131D45;--fg:#EAF0FF;--muted:#A5B2D8;--line:#27346B;--head:#0A4FB0;--bad:#FF8A80;--good:#4BD58D;--warnbg:#3A3115}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0B1230;--card:#131D45;--fg:#EAF0FF;--muted:#A5B2D8;--line:#27346B;--head:#0A4FB0;--bad:#FF8A80;--good:#4BD58D;--warnbg:#3A3115}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Outfit","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.45}
+.w{max-width:900px;margin:0 auto;padding:0 16px}
+header{background:var(--head);color:#fff;padding:10px 0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{background:#fff;border-radius:12px;padding:6px 12px;display:inline-flex}.logo img{height:34px;display:block}
+.ctl{display:flex;gap:8px;align-items:center;font-size:14px}
+select,input,textarea,button{font:inherit;color:var(--fg)}
+select,input,textarea{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+button{cursor:pointer;border:2px solid var(--line);background:var(--card);border-radius:99px;padding:7px 14px;font-weight:500;min-height:38px}
+button.p{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
+button.sm{padding:4px 10px;min-height:32px;font-size:14px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+header button{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;min-height:34px;padding:4px 12px}
+nav{background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav .w{display:flex;gap:4px}
+nav button{border:0;border-bottom:4px solid transparent;border-radius:0;background:none;padding:12px;color:var(--muted);white-space:nowrap}
+nav button[aria-current="true"]{color:var(--blue);border-bottom-color:var(--orange);font-weight:700}
+:root[data-theme="dark"] nav button[aria-current="true"]{color:#8DB9FF}
+main{padding:16px 0 50px}
+h2{font-size:22px;margin:20px 0 8px}h3{font-size:17px;margin:0 0 6px}
+.g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+@media(min-width:640px){.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.f{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.k b{display:block;font-size:28px;line-height:1.1}.k span{color:var(--muted);font-size:14px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
+.r{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.m{color:var(--muted);font-size:14px}
+.ch{display:inline-block;color:#fff;font-size:12px;font-weight:600;border-radius:99px;padding:1px 9px}
+.tg{display:inline-block;background:var(--warnbg);border:1px solid var(--orange);border-radius:99px;padding:0 9px;font-size:12px;margin-left:4px}
+.bad{color:var(--bad);font-weight:600;font-size:14px}.ok{color:var(--good);font-weight:600}
+.fl{background:var(--warnbg);border:2px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.f{display:grid;gap:8px;margin:8px 0}
+.tb{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.tb select{width:auto;flex:1;min-width:150px}
+label.m{display:block}label.m select,label.m input{margin-top:4px}
+#login{max-width:380px;margin:40px auto;padding:0 16px}
+#login .c{padding:20px}#login .logo{display:flex;justify-content:center;margin-bottom:16px;background:#fff;border:1px solid var(--line)}#login .logo img{height:56px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-top:1px solid var(--line)}th{color:var(--muted);font-weight:600}
+.sc{overflow-x:auto}
+</style>
+</head>
+<body>
+<div id="login" hidden><div class="c"><div class="logo"><img src="assets/logo.png" alt="iSchool"></div><h2 style="margin-top:0">Mentor Hub sign in</h2>
+<label class="m">Username<input id="lu" autocomplete="username"></label><label class="m" style="margin-top:8px">Password<input id="lp" type="password" autocomplete="current-password"></label>
+<div id="le" class="bad" role="alert"></div><button class="p" id="lg" style="width:100%;margin-top:10px">Sign in</button>
+<p class="m">Demo accounts: admin / admin123, mentor1 / pass1234 (mentor2 to mentor4 use the same password). Demo data is stored only in this browser.</p></div></div>
+<div id="app" hidden>
+<header><div class="w hd"><span class="logo"><img src="assets/logo.png" alt="iSchool"></span><div class="ctl"><span id="who"></span><button id="th" aria-label="Switch theme"></button><button id="lo">Sign out</button></div></div></header>
+<nav><div class="w" id="nav"></div></nav>
+<main><div class="w" id="v"></div></main>
+</div>
+<script>
+const SL=["08:00-09:30","09:45-11:15","11:30-13:00","13:15-14:45"],DN=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],MC=["#0A6CEB","#D9560A","#12894A","#7C4DDB"],KEY="mentor-hub-v3";
+const td=()=>new Date().toISOString().slice(0,10),$=i=>document.getElementById(i);
+const E=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const E7=()=>({0:[],1:[],2:[],3:[],4:[],5:[],6:[]}),DEF=[{id:1,l:"Sessions delivered",t:"number"},{id:2,l:"Students present",t:"number"},{id:3,l:"Topics covered",t:"long"},{id:4,l:"All tutors on time?",t:"yesno"},{id:5,l:"Problems or issues",t:"long"},{id:6,l:"Overall day rating",t:"choice",o:"Excellent,Good,Fair,Poor"},{id:7,l:"Follow-up needed",t:"long"}];
+function seed(){const users=[{id:1,u:"admin",p:"admin123",n:"Admin",role:"admin",on:1}].concat([2,3,4,5].map(i=>({id:i,u:"mentor"+(i-1),p:"pass1234",n:"Mentor "+(i-1),role:"mentor",on:1})));
+const tutors=["Omar Hassan","Nada Ali","Youssef Adel","Mariam Samir","Karim Fathy","Salma Nabil","Ahmed Tarek","Hana Mostafa"].map((n,i)=>({id:i+1,n,ar:0}));
+const schools=["Future Language School","Al Nour International","Cairo Modern School","Sunrise Academy","Horizon Schools","Delta STEM School"].map((n,i)=>({id:i+1,n,own:[2,3,4,5,2,3][i]}));
+const cls=["Grade 4","Grade 5","Grade 6"],tp=["Scratch basics","Python loops","Web pages","Robotics","Game design"],tpl={};
+schools.forEach((k,si)=>{tpl[k.id]={};for(let d=0;d<7;d++)tpl[k.id][d]=(d>4?[]:[0,1]).map(e=>{const i=si*2+e;return{id:i+1,t:(i+(i>=8?1:0))%4,cls:cls[(i+d)%3],tu:i==5?0:i%8+1,tp:tp[(i+d)%5]}})});
+return{users,tutors,schools,tpl,over:{},reqs:[],rtpl:DEF,reps:{},msub:{},mnote:{},mreqs:[]}}
+let S,me=null,tab="",va=2,date=td(),sc_=0,dy=0,rqo=0,msg="";
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!S||!S.users)S=seed();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const usr=i=>S.users.find(u=>u.id==i)||{n:"?"},tut=i=>S.tutors.find(t=>t.id==i),sch=i=>S.schools.find(k=>k.id==i);
+const chip=o=>`<span class="ch" style="background:${MC[(o-2)%4]}">${E(usr(o).n)}</span>`;
+const opts=(a,sel)=>a.map(x=>`<option value="${x[0]}"${x[0]==sel?" selected":""}>${E(x[1])}</option>`).join("");
+const tutOpts=sel=>`<option value="0">No tutor</option>`+opts(S.tutors.filter(t=>!t.ar).map(t=>[t.id,t.n]),sel);
+const acc=(u,d)=>u.role=="admin"?S.schools:S.schools.filter(k=>k.own==u.id||S.reqs.some(r=>r.st=="approved"&&r.by==u.id&&r.sch.includes(k.id)&&r.from<=d&&d<=r.until));
+function inst(d){const w=new Date(d+"T12:00").getDay();const o=[];S.schools.forEach(k=>((S.tpl[k.id]||{})[w]||[]).forEach(e=>{const key=d+"|"+k.id+"|"+e.id,v=S.over[key]||{};o.push({key,k,e,tu:v.tu!==undefined?v.tu:e.tu,x:!!v.x})}));return o}
+const conf=(d,t,sl,key)=>t?inst(d).find(i=>!i.x&&i.tu==t&&i.e.t==sl&&i.key!=key):null;
+const curU=()=>me.role=="admin"?usr(va):me;
+const flash=t=>{msg=t;render()};
+function dash(){const u=curU(),ids=acc(u,date).map(k=>k.id),l=inst(date).filter(i=>ids.includes(i.k.id)).sort((a,b)=>a.e.t-b.e.t),live=l.filter(i=>!i.x);
+const un=live.filter(i=>!i.tu).length,cf=live.filter(i=>conf(date,i.tu,i.e.t,i.key)).length;
+let h=(me.role=="admin"?`<label class="m">Viewing mentor<select data-c="va">${opts(S.users.filter(x=>x.role=="mentor").map(x=>[x.id,x.n]),va)}</select></label>`:"")+
+`<div class="r"><h2 style="margin:0">${me.role=="admin"?E(u.n)+" dashboard":"My dashboard"}</h2><input type="date" id="dt" value="${date}" style="width:auto" aria-label="Date"></div>
+<div class="g g4"><div class="k"><b>${live.length}</b><span>Sessions</span></div><div class="k"><b class="${un?"bad":""}">${un}</b><span>Without tutor</span></div><div class="k"><b class="${cf?"bad":""}">${cf}</b><span>Conflicts</span></div><div class="k"><b>${ids.length}</b><span>Schools in scope</span></div></div>
+<p class="m">Today comes from each school template. Changes here apply to this date only.</p>`;
+if(!l.length)return h+`<p class="m">No sessions on this date (weekend or empty template).</p>`;
+return h+l.map(i=>{const c=!i.x&&conf(date,i.tu,i.e.t,i.key);return `<div class="c" style="${i.x?"opacity:.6":""}"><div><b>${E(i.k.n)}</b> ${chip(i.k.own)}${i.k.own!=u.id?'<span class="tg">Temporary</span>':""}<div class="m">${SL[i.e.t]} - ${E(i.e.cls)} - ${E(i.e.tp)}${i.x?" - Cancelled":""}</div></div>
+<div class="tb"><select data-c="ov" data-k="${i.key}" aria-label="Tutor"${i.x?" disabled":""}>${tutOpts(i.tu)}</select><button class="sm" data-a="cx" data-k="${i.key}">${i.x?"Restore":"Cancel for this day"}</button></div>${c?`<div class="bad">Conflict: ${E(tut(i.tu).n)} is also booked at ${E(c.k.n)} at this time.</div>`:""}${!i.tu&&!i.x?'<div class="bad">No tutor assigned.</div>':""}</div>`}).join("")}
+function tp(){const ls=me.role=="admin"?S.schools:acc(me,td());if(!ls.length)return`<h2>Daily templates</h2><p class="m">No schools yet.</p>`;if(!ls.some(k=>k.id==sc_))sc_=ls[0].id;
+const T=S.tpl[sc_]||(S.tpl[sc_]=E7());
+let h=`<h2>Daily templates</h2><p class="m">Set the weekly routine for each school once. It repeats every week, and you can change any single day on the dashboard.</p><label class="m">School<select data-c="sc">${opts(ls.map(k=>[k.id,k.n]),sc_)}</select></label><div class="tb">${DN.map((n,i)=>`<button class="sm${i==dy?" p":""}" data-a="dy" data-v="${i}">${n}</button>`).join("")}</div>`;
+(T[dy]||[]).forEach(e=>{h+=`<div class="c"><div class="f"><select data-c="ef" data-f="t" data-id="${e.id}" aria-label="Time">${opts(SL.map((s,i)=>[i,s]),e.t)}</select><input data-c="ef" data-f="cls" data-id="${e.id}" value="${E(e.cls)}" aria-label="Class"><input data-c="ef" data-f="tp" data-id="${e.id}" value="${E(e.tp)}" aria-label="Topic"><select data-c="ef" data-f="tu" data-id="${e.id}" aria-label="Tutor">${tutOpts(e.tu)}</select></div><button class="sm" data-a="del" data-id="${e.id}">Remove</button></div>`});
+return h+`<div class="tb"><button class="p" data-a="adde">Add session to ${DN[dy]}</button><button data-a="copyd">Copy ${DN[dy]} to all days</button></div>`}
+function rq(){const adm=me.role=="admin",d=td(),ms=S.users.filter(x=>x.role=="mentor"&&x.id!=me.id),st=r=>r.st=="approved"&&r.until<d?"ended":r.st;
+let h=`<h2>Temporary access</h2>`;
+if(adm){h+=`<div class="c"><h3>Assign schools temporarily</h3><div class="f"><label class="m">Mentor who covers<select id="rb">${opts(S.users.filter(x=>x.role=="mentor").map(x=>[x.id,x.n]),2)}</select></label><div>${S.schools.map(k=>`<label><input type="checkbox" class="rs" value="${k.id}" style="width:auto"> ${E(k.n)} ${chip(k.own)}</label>`).join("<br>")}</div><label class="m">From<input type="date" id="rf" value="${d}"></label><label class="m">Until<input type="date" id="ru" value="${d}"></label></div><button class="p" data-a="rqs">Assign now</button></div>`}
+else{if(!ms.some(x=>x.id==rqo))rqo=ms[0].id;h+=`<div class="c"><h3>Request access to a mentor's schools</h3><p class="m">For when a mentor is on vacation. The school owner or the admin approves. The schools then appear on your dashboard as Temporary for the dates you choose.</p><div class="f"><label class="m">Mentor<select data-c="rqo">${opts(ms.map(x=>[x.id,x.n]),rqo)}</select></label><div>${S.schools.filter(k=>k.own==rqo).map(k=>`<label><input type="checkbox" class="rs" value="${k.id}" checked style="width:auto"> ${E(k.n)}</label>`).join("<br>")}</div><label class="m">From<input type="date" id="rf" value="${d}"></label><label class="m">Until<input type="date" id="ru" value="${d}"></label></div><button class="p" data-a="rqs">Send request</button></div>`}
+const l=S.reqs.filter(r=>adm||r.by==me.id||r.to==me.id).slice().reverse();h+=`<h2>Requests</h2>`+(l.length?"":`<p class="m">No requests yet.</p>`);
+return h+l.map(r=>`<div class="c"><b>${E(usr(r.by).n)}</b> ${r.to?"asks "+E(usr(r.to).n):"assigned by admin"}<div>${r.sch.map(i=>E(sch(i).n)).join(", ")}</div><div class="m">${r.from} to ${r.until} - <b>${st(r)}</b></div><div class="tb">${r.st=="pending"&&(adm||r.to==me.id)?`<button class="sm p" data-a="rs" data-id="${r.id}" data-v="approved">Approve</button><button class="sm" data-a="rs" data-id="${r.id}" data-v="declined">Decline</button>`:""}${r.st=="approved"&&(adm||r.to==me.id)?`<button class="sm" data-a="rs" data-id="${r.id}" data-v="revoked">Revoke</button>`:""}</div></div>`).join("")}
+function ov(){const d=td();return `<h2>Overview</h2><div class="g g4"><div class="k"><b>${S.users.filter(u=>u.role=="mentor").length}</b><span>Mentors</span></div><div class="k"><b>${S.schools.length}</b><span>Schools</span></div><div class="k"><b>${S.tutors.filter(t=>!t.ar).length}</b><span>Tutors</span></div><div class="k"><b>${S.reqs.filter(r=>r.st=="pending").length}</b><span>Pending requests</span></div></div>
+<div class="c sc"><table><tr><th>Mentor</th><th>Schools</th><th>Today</th><th>No tutor</th><th></th></tr>${S.users.filter(u=>u.role=="mentor").map(u=>{const ids=acc(u,d).map(k=>k.id),l=inst(d).filter(i=>ids.includes(i.k.id)&&!i.x);return `<tr><td>${chip(u.id)}${u.on?"":" (off)"}</td><td>${ids.length}</td><td>${l.length}</td><td class="${l.some(i=>!i.tu)?"bad":""}">${l.filter(i=>!i.tu).length}</td><td><button class="sm" data-a="open" data-id="${u.id}">Open</button></td></tr>`}).join("")}</table></div>`}
+function mn(){return `<h2>Mentor accounts</h2><div class="c"><h3>Create account</h3><div class="f"><input id="nn" placeholder="Full name" aria-label="Full name"><input id="nu" placeholder="Username" aria-label="Username" autocapitalize="none"><input id="np" placeholder="Password (min 8 characters)" aria-label="Password"></div><button class="p" data-a="addm">Create mentor</button></div>`+
+S.users.filter(u=>u.role=="mentor").map(u=>`<div class="c"><div class="r"><div><b>${E(u.n)}</b><div class="m">Username: ${E(u.u)}</div></div><button class="sm" data-a="onoff" data-id="${u.id}">${u.on?"Disable":"Enable"}</button></div><div class="tb"><input id="pw${u.id}" placeholder="New password" style="flex:1;min-width:140px" aria-label="New password"><button class="sm" data-a="pw" data-id="${u.id}">Reset password</button></div></div>`).join("")}
+function sc(){return `<h2>Schools</h2><div class="c"><h3>Add school</h3><div class="f"><input id="sn" placeholder="School name" aria-label="School name"><select id="so" aria-label="Owner">${opts(S.users.filter(x=>x.role=="mentor").map(x=>[x.id,x.n]),2)}</select></div><button class="p" data-a="adds">Add school</button></div>`+
+S.schools.map(k=>`<div class="c"><div class="r"><b>${E(k.n)}</b>${chip(k.own)}</div><div class="tb"><select data-c="own" data-id="${k.id}" aria-label="Owner">${opts(S.users.filter(x=>x.role=="mentor").map(x=>[x.id,x.n]),k.own)}</select><button class="sm" data-a="et" data-id="${k.id}">Edit template</button></div></div>`).join("")}
+function tt(){return `<h2>Tutors</h2><div class="c"><div class="f"><input id="tn" placeholder="Tutor name" aria-label="Tutor name"></div><button class="p" data-a="addt">Add tutor</button></div>`+S.tutors.map(t=>`<div class="c r"><span${t.ar?' class="m"':""}>${E(t.n)}${t.ar?" (archived)":""}</span><button class="sm" data-a="art" data-id="${t.id}">${t.ar?"Restore":"Archive"}</button></div>`).join("")}
+const TY=[["text","Short text"],["long","Long text"],["number","Number"],["yesno","Yes / No"],["choice","Choice (dropdown)"]];
+let mv=null,mf=td(),mt=td();
+const mst=r=>r.adm=="approved"?"approved":(r.adm=="declined"||Object.values(r.ap).includes("declined"))?"declined":Object.values(r.ap).every(v=>v=="approved")?"approved":"pending";
+const dates=(a,b)=>{const o=[];for(let x=new Date(a+"T12:00");x<=new Date(b+"T12:00")&&o.length<93;x.setDate(x.getDate()+1))o.push(x.toISOString().slice(0,10));return o};
+function rows(a,b,ms){const R=[["Date","Mentor","School"].concat(S.rtpl.map(f=>f.l),["Mentor note"])];
+dates(a,b).forEach(d=>ms.forEach(u=>{Object.keys(S.reps).filter(k=>k.startsWith(d+"|")&&S.reps[k].by==u.id&&sch(+k.split("|")[1])).forEach(k=>{const r=S.reps[k];R.push([d,u.n,sch(+k.split("|")[1]).n].concat(S.rtpl.map(f=>(r.v||{})[f.id]||""),[""]))});
+const nt=S.mnote[d+"|"+u.id];if(nt)R.push([d,u.n,"Daily summary"].concat(S.rtpl.map(()=>""),[nt]))}));return R}
+const csv=R=>"\ufeff"+R.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+async function exp(R,name){if(typeof claude!="undefined"){try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:csv(R)});return flash("Export ready: "+name)}}catch(e){if(e&&e.code=="declined")return}}
+try{await navigator.clipboard.writeText(csv(R));flash("Download is not available here, so the CSV was copied. Paste it into Excel or Google Sheets.")}catch(e){flash("Export is not available in this view.")}}
+function fld(f,v,at){v=v==null?"":v;const a=`data-c="rv" ${at} data-f="${f.id}" aria-label="${E(f.l)}"`;
+if(f.t=="long")return `<textarea ${a} rows="2">${E(v)}</textarea>`;if(f.t=="number")return `<input type="number" min="0" ${a} value="${E(v)}">`;
+if(f.t=="yesno"||f.t=="choice"){const o=f.t=="yesno"?["Yes","No"]:(f.o||"").split(",").map(x=>x.trim()).filter(Boolean);return `<select ${a}><option value="">Select</option>${o.map(x=>`<option${x==v?" selected":""}>${E(x)}</option>`).join("")}</select>`}
+return `<input ${a} value="${E(v)}">`}
+function rp(){const adm=me.role=="admin",d=date,ms=adm?S.users.filter(x=>x.role=="mentor"):[me];
+let h=`<div class="r"><h2 style="margin:0">Daily report</h2><input type="date" id="dt" value="${d}" style="width:auto" aria-label="Date"></div><p class="m">Fill one report per school using the report form, then submit your daily summary. Open a school to fill it in.</p>`+(adm?`<div class="tb"><button class="sm p" data-a="aexp">Export all mentors for this date (CSV)</button></div>`:"");
+ms.forEach(u=>{const ks=acc(u,d),sub=S.msub[d+"|"+u.id],miss=ks.filter(k=>!S.reps[d+"|"+k.id]).length;
+h+=`<h2>${adm?E(u.n):"My schools"}${sub?' <span class="tg">Submitted</span>':""}</h2>`+ks.map(k=>{const r=S.reps[d+"|"+k.id],n=inst(d).filter(i=>i.k.id==k.id&&!i.x).length;
+return `<details class="c"><summary><b>${E(k.n)}</b>${k.own!=u.id?'<span class="tg">Temporary</span>':""} <span class="m">${n} sessions scheduled - ${r?"report started":"no report yet"}</span></summary>${S.rtpl.map(f=>`<label class="m">${E(f.l)}${fld(f,(r&&r.v||{})[f.id],`data-sid="${k.id}"`)}</label>`).join("")}</details>`}).join("")+
+`<div class="c"><h3>Daily summary${adm?" - "+E(u.n):""}</h3><textarea data-c="mn" data-mid="${u.id}" rows="3" placeholder="Notes for the day (optional)" aria-label="Mentor note">${E(S.mnote[d+"|"+u.id]||"")}</textarea><div class="m">${ks.length-miss} of ${ks.length} school reports started.</div><div class="tb"><button class="p sm" data-a="msub" data-id="${u.id}">${sub?"Update submission":"Submit daily report"}</button><button class="sm" data-a="mexp" data-id="${u.id}">Export CSV</button></div></div>`});return h}
+function rf(){return `<h2>Report form</h2><p class="m">These are the questions every school report uses. Add, edit, reorder or remove questions and the change applies to all reports.</p>`+S.rtpl.map((f,i)=>`<div class="c"><div class="f"><input data-c="rf" data-f="l" data-id="${f.id}" value="${E(f.l)}" aria-label="Question"><select data-c="rf" data-f="t" data-id="${f.id}" aria-label="Answer type">${opts(TY,f.t)}</select>${f.t=="choice"?`<input data-c="rf" data-f="o" data-id="${f.id}" value="${E(f.o||"")}" placeholder="Options separated by commas" aria-label="Options">`:""}</div><div class="tb"><button class="sm" data-a="rup" data-id="${f.id}"${i?"":" disabled"}>Move up</button><button class="sm" data-a="rdn" data-id="${f.id}"${i<S.rtpl.length-1?"":" disabled"}>Move down</button><button class="sm" data-a="rdel" data-id="${f.id}">Remove</button></div></div>`).join("")+`<button class="p" data-a="radd">Add question</button>`}
+function mr(){const adm=me.role=="admin",rg=`<div class="f"><label class="m">From<input type="date" data-c="mfr" value="${mf}"></label><label class="m">To<input type="date" data-c="mto" value="${mt}"></label></div>`;
+let h=`<h2>Master report</h2><p class="m">One large report that merges every mentor's reports for a date range. A mentor needs approval from all other mentors. The admin can approve instead.</p>`+(adm?`<div class="c"><h3>Build merged report</h3>${rg}<button class="p" data-a="mbuild">Build now</button></div>`:`<div class="c"><h3>Request access to all mentors' reports</h3>${rg}<button class="p" data-a="mrq">Request from all mentors</button></div>`);
+const l=S.mreqs.filter(r=>adm||r.by==me.id||r.ap[me.id]).slice().reverse();h+=`<h2>Requests</h2>`+(l.length?"":`<p class="m">No requests yet.</p>`);
+h+=l.map(r=>{const s=mst(r);return `<div class="c"><b>${E(usr(r.by).n)}</b> wants the merged report<div class="m">${r.from} to ${r.to}</div><div class="m">${Object.keys(r.ap).map(i=>E(usr(i).n)+": "+r.ap[i]).join(" - ")}${r.adm?" - Admin: "+r.adm:""}</div><b class="${s=="approved"?"ok":s=="declined"?"bad":""}">${s=="approved"?"Approved":s=="declined"?"Declined":"Waiting for approval"}</b><div class="tb">${r.ap[me.id]=="pending"?`<button class="sm p" data-a="map" data-id="${r.id}" data-v="approved">Approve</button><button class="sm" data-a="map" data-id="${r.id}" data-v="declined">Decline</button>`:""}${adm&&r.adm!="approved"?`<button class="sm p" data-a="aap" data-id="${r.id}" data-v="approved">Admin approve</button>`:""}${adm&&r.adm!="declined"?`<button class="sm" data-a="aap" data-id="${r.id}" data-v="declined">Admin decline</button>`:""}${s=="approved"&&(adm||r.by==me.id)?`<button class="sm" data-a="mview" data-id="${r.id}">View</button><button class="sm" data-a="mexpr" data-id="${r.id}">Export CSV</button>`:""}</div></div>`}).join("");
+if(mv){const R=rows(mv.from,mv.to,S.users.filter(x=>x.role=="mentor"));h+=`<h2>Merged report ${mv.from} to ${mv.to}</h2><div class="tb"><button class="sm p" data-a="mexpv">Export CSV</button></div><p class="m">${R.length-1} rows from ${new Set(R.slice(1).map(r=>r[1])).size} mentors.</p><div class="c sc"><table>${R.slice(0,201).map((r,i)=>`<tr>${r.map(c=>i?`<td>${E(c)}</td>`:`<th>${E(c)}</th>`).join("")}</tr>`).join("")}</table></div>`}
+return h}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||!me)return;const a=b.dataset.a,id=+b.dataset.id,v=b.dataset.v,ms=S.users.filter(x=>x.role=="mentor");
+if(a=="msub"){S.msub[date+"|"+id]=true;return flash("Daily report submitted.")}
+if(a=="mexp")return exp(rows(date,date,[usr(id)]),"daily-report-"+usr(id).u+"-"+date+".csv");
+if(a=="aexp")return exp(rows(date,date,ms),"all-mentors-daily-report-"+date+".csv");
+if(a=="radd"){S.rtpl.push({id:Date.now(),l:"New question",t:"text"});return render()}
+if(a=="rdel"){S.rtpl=S.rtpl.filter(f=>f.id!=id);return render()}
+if(a=="rup"||a=="rdn"){const i=S.rtpl.findIndex(f=>f.id==id),j=a=="rup"?i-1:i+1,t=S.rtpl[i];S.rtpl[i]=S.rtpl[j];S.rtpl[j]=t;return render()}
+if(a=="mrq"){if(!mf||!mt||mt<mf)return flash("Check the dates.");const ap={};ms.filter(x=>x.id!=me.id).forEach(x=>ap[x.id]="pending");S.mreqs.push({id:Date.now(),by:me.id,from:mf,to:mt,ap,adm:null});return flash("Request sent to all other mentors.")}
+if(a=="map"){S.mreqs.find(x=>x.id==id).ap[me.id]=v;return render()}
+if(a=="aap"){S.mreqs.find(x=>x.id==id).adm=v;return render()}
+if(a=="mbuild"){if(!mf||!mt||mt<mf)return flash("Check the dates.");mv={from:mf,to:mt};return render()}
+if(a=="mview"||a=="mexpr"){const r=S.mreqs.find(x=>x.id==id);if(mst(r)!="approved"||!(me.role=="admin"||r.by==me.id))return flash("This report is not approved yet.");if(a=="mview"){mv={from:r.from,to:r.to};return render()}return exp(rows(r.from,r.to,ms),"all-mentors-report-"+r.from+"-to-"+r.to+".csv")}
+if(a=="mexpv"&&mv&&(me.role=="admin"||S.mreqs.some(r=>r.by==me.id&&r.from==mv.from&&r.to==mv.to&&mst(r)=="approved")))return exp(rows(mv.from,mv.to,ms),"all-mentors-report-"+mv.from+"-to-"+mv.to+".csv")});
+document.addEventListener("change",e=>{const t=e.target,c=t.dataset.c;if(!c||!me)return;
+if(c=="rv"){const sid=+t.dataset.sid,key=date+"|"+sid,r=S.reps[key]||(S.reps[key]={by:me.role=="admin"?sch(sid).own:me.id,v:{}});r.v[t.dataset.f]=t.value;return save()}
+if(c=="mn"){S.mnote[date+"|"+t.dataset.mid]=t.value;return save()}
+if(c=="mfr"){mf=t.value;return}if(c=="mto"){mt=t.value;return}
+if(c=="rf"){const f=S.rtpl.find(x=>x.id==+t.dataset.id);f[t.dataset.f]=t.value;return t.dataset.f=="t"?render():save()}});
+const TABS={admin:[["ov","Overview"],["dash","Mentor view"],["mn","Mentors"],["sc","Schools"],["tp","Templates"],["rp","Reports"],["rf","Report form"],["mr","Master report"],["tt","Tutors"],["rq","Requests"]],mentor:[["dash","Dashboard"],["rp","Daily report"],["tp","Templates"],["mr","Master report"],["rq","Requests"]]},V={ov,dash,mn,sc,tp,tt,rq,rp,rf,mr};
+
+function render(){$("login").hidden=!!me;$("app").hidden=!me;if(!me)return;const t=TABS[me.role];if(!t.some(x=>x[0]==tab))tab=t[0][0];
+$("who").textContent=me.n;$("nav").innerHTML=t.map(x=>`<button data-a="tab" data-v="${x[0]}"${x[0]==tab?' aria-current="true"':""}>${x[1]}</button>`).join("");
+$("v").innerHTML=(msg?`<div class="fl" role="status">${E(msg)}</div>`:"")+V[tab]();msg="";save()}
+const picked=()=>[...document.querySelectorAll(".rs:checked")].map(x=>+x.value);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||!me)return;const a=b.dataset.a,id=+b.dataset.id,v=b.dataset.v;
+if(a=="tab"){tab=v;return render()}if(a=="dy"){dy=+v;return render()}if(a=="open"){va=id;tab="dash";return render()}
+if(a=="cx"){const o=S.over[b.dataset.k]||(S.over[b.dataset.k]={});o.x=!o.x;return render()}
+if(a=="adde"){S.tpl[sc_][dy].push({id:Date.now(),t:0,cls:"Grade 4",tu:0,tp:"New topic"});return render()}
+if(a=="del"){S.tpl[sc_][dy]=S.tpl[sc_][dy].filter(x=>x.id!=id);return render()}
+if(a=="copyd"){const src=S.tpl[sc_][dy];for(let d=0;d<7;d++)if(d!=dy)S.tpl[sc_][d]=src.map((x,i)=>({...x,id:Date.now()+d*100+i}));return flash("Copied "+DN[dy]+" to all days.")}
+if(a=="rqs"){const sh=picked(),f=$("rf").value,u=$("ru").value;if(!sh.length)return flash("Choose at least one school.");if(!f||!u||u<f)return flash("Check the dates.");
+S.reqs.push({id:Date.now(),by:me.role=="admin"?+$("rb").value:me.id,to:me.role=="admin"?0:rqo,sch:sh,from:f,until:u,st:me.role=="admin"?"approved":"pending"});return flash(me.role=="admin"?"Schools assigned.":"Request sent.")}
+if(a=="rs"){S.reqs.find(r=>r.id==id).st=v;return render()}
+if(a=="addm"){const n=$("nn").value.trim(),u=$("nu").value.trim().toLowerCase(),p=$("np").value;if(!n||!u)return flash("Enter a name and username.");if(p.length<8)return flash("Password must be at least 8 characters.");if(S.users.some(x=>x.u==u))return flash("That username is taken.");S.users.push({id:Date.now(),u,p,n,role:"mentor",on:1});return flash("Account created for "+n+".")}
+if(a=="onoff"){const u=usr(id);u.on=u.on?0:1;return render()}
+if(a=="pw"){const p=$("pw"+id).value;if(p.length<8)return flash("Password must be at least 8 characters.");usr(id).p=p;return flash("Password updated.")}
+if(a=="adds"){const n=$("sn").value.trim();if(!n)return flash("Enter the school name.");const k={id:Date.now(),n,own:+$("so").value};S.schools.push(k);S.tpl[k.id]=E7();return flash(n+" added.")}
+if(a=="et"){sc_=id;tab="tp";return render()}
+if(a=="addt"){const n=$("tn").value.trim();if(!n)return flash("Enter a name.");S.tutors.push({id:Date.now(),n,ar:0});return flash(n+" added.")}
+if(a=="art"){const t=tut(id);t.ar=t.ar?0:1;return render()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id=="dt"){date=t.value||td();return render()}const c=t.dataset.c;if(!c)return;const id=+t.dataset.id,v=t.value;
+if(c=="va"){va=+v;return render()}if(c=="sc"){sc_=+v;return render()}if(c=="rqo"){rqo=+v;return render()}
+if(c=="own"){sch(id).own=+v;return flash("Owner changed.")}
+if(c=="ef"){const x=S.tpl[sc_][dy].find(z=>z.id==id),f=t.dataset.f;x[f]=(f=="t"||f=="tu")?+v:v;return render()}
+if(c=="ov"){const key=t.dataset.k,[d,s,en]=key.split("|"),i=inst(d).find(z=>z.key==key),n=+v,k=conf(d,n,i.e.t,key);if(k){render();return flash(tut(n).n+" is already booked at "+k.k.n+" ("+usr(k.k.own).n+") at that time.")}(S.over[key]||(S.over[key]={})).tu=n;render()}});
+$("lg").onclick=()=>{const u=S.users.find(x=>x.u==$("lu").value.trim().toLowerCase()&&x.p==$("lp").value&&x.on);if(!u){$("le").textContent="Wrong username or password, or the account is disabled.";return}$("le").textContent="";me=u;tab="";mv=null;$("lp").value="";render()};
+$("lp").onkeydown=e=>{if(e.key=="Enter")$("lg").click()};
+$("lo").onclick=()=>{me=null;mv=null;render()};
+const th=$("th"),root=document.documentElement,dark=()=>root.dataset.theme?root.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches,lab=()=>{th.textContent=dark()?"Light mode":"Dark mode"};
+try{const t=localStorage.getItem("mh-theme");if(t)root.dataset.theme=t}catch(e){}
+th.onclick=()=>{const n=dark()?"light":"dark";root.dataset.theme=n;try{localStorage.setItem("mh-theme",n)}catch(e){}lab()};
+lab();render();
+</script>
+</body>
+</html>
+
