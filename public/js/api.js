@@ -75,7 +75,9 @@ export function applyBootstrapToState(data) {
       t: Number(ts.slot),
       cls: ts.class_name || "",
       tu: ts.tutor_id ? Number(ts.tutor_id) : 0,
-      tp: ts.topic || ""
+      tp: ts.topic || "",
+      ef: ts.effective_from || "",
+      eu: ts.effective_until || ""
     });
   });
 
@@ -106,18 +108,26 @@ export function applyBootstrapToState(data) {
     adm: mr.admin_decision || null,
     ap: mr.approvals || {}
   }));
+
+  if (data.notifications) {
+    S.notifs = data.notifications.map(n => ({
+      id: Number(n.id),
+      to: Number(n.recipient_id),
+      txt: n.message,
+      dt: n.created_at,
+      rd: n.is_read ? 1 : 0
+    }));
+  }
 }
 
 /**
  * Maps day-specific rows (overrides, reports, daily summaries) into `S`
  */
 export function applyDayToState(date, data) {
-  // Clear old overrides for this date
   Object.keys(S.over).forEach(k => {
     if (k.startsWith(date + "|")) delete S.over[k];
   });
 
-  // Find school_id for each session_id
   const sessionSchoolMap = {};
   Object.keys(S.tpl).forEach(sid => {
     for (let d = 0; d < 7; d++) {
@@ -161,4 +171,3 @@ export async function loadDay(date) {
   const data = await callApi("load_day", { date });
   applyDayToState(date, data);
 }
-

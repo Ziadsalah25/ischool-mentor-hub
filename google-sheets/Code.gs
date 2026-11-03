@@ -2,15 +2,10 @@
  * =====================================================================
  * iSchool Mentor Hub — Google Sheets Database & Backend Engine
  * =====================================================================
- * HOW TO SETUP (2 MINUTES):
- * 1. Open a new Google Sheet at https://sheets.new
- * 2. Click "Extensions" > "Apps Script"
- * 3. Delete any code in Code.gs and paste this entire file.
- * 4. Run `setupDatabase()` once from the toolbar to create all tabs & seed data.
- * 5. Click "Deploy" > "New deployment" > Type: "Web app":
- *    - Execute as: "Me"
- *    - Who has access: "Anyone"
- * 6. Copy the "Web app URL" and put it in your config / Cloudflare Worker.
+ * Includes:
+ * 1. Full relational tables in Google Sheets tabs
+ * 2. Automatic Email + In-App Notifications (`notifications` tab + `MailApp`)
+ * 3. Template Effective Date Versioning (`effective_from`, `effective_until`)
  * =====================================================================
  */
 
@@ -18,13 +13,14 @@ const TABS = {
   members: ["id", "email", "name", "role", "active", "google_sub", "last_login_at", "created_at"],
   tutors: ["id", "name", "archived"],
   schools: ["id", "name", "owner_id"],
-  template_sessions: ["id", "school_id", "weekday", "slot", "class_name", "topic", "tutor_id"],
+  template_sessions: ["id", "school_id", "weekday", "slot", "class_name", "topic", "tutor_id", "effective_from", "effective_until"],
   session_overrides: ["session_id", "on_date", "tutor_overridden", "tutor_id", "cancelled"],
   access_requests: ["id", "requester_id", "owner_id", "from_date", "until_date", "status", "schools_json", "created_at"],
   report_fields: ["id", "label", "field_type", "options", "sort_order"],
   school_reports: ["school_id", "report_date", "author_id", "answers_json", "updated_at"],
   daily_summaries: ["member_id", "report_date", "note", "submitted_at"],
-  master_report_requests: ["id", "requester_id", "from_date", "to_date", "admin_decision", "approvals_json", "created_at"]
+  master_report_requests: ["id", "requester_id", "from_date", "to_date", "admin_decision", "approvals_json", "created_at"],
+  notifications: ["id", "recipient_id", "message", "is_read", "created_at"]
 };
 
 function cairoToday() {
@@ -42,11 +38,35 @@ function getOrCreateSheet(ss, name, headers) {
   return sh;
 }
 
+function sendAppNotification(ss, recipientId, message, subject) {
+  const nSheet = getOrCreateSheet(ss, "notifications", TABS.notifications);
+  const nRows = readTable(ss, "notifications");
+  const id = nextId(nRows);
+  nSheet.appendRow([id, recipientId, message, 0, cairoToday()]);
+
+  // Also send an automatic email via Google MailApp if recipient has a valid email
+  try {
+    const members = readTable(ss, "members");
+    const targets =
+      Number(recipientId) === 0
+        ? members.filter(m => m.role === "admin" && Number(m.active) === 1)
+        : members.filter(m => Number(m.id) === Number(recipientId) && Number(m.active) === 1);
+    targets.forEach(t => {
+      if (t.email && t.email.includes("@") && typeof MailApp !== "undefined") {
+        MailApp.sendEmail({
+          to: t.email,
+          subject: subject || "iSchool Mentor Hub — Notification",
+          body: message
+        });
+      }
+    });
+  } catch (e) {}
+}
+
 function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   Object.keys(TABS).forEach(name => getOrCreateSheet(ss, name, TABS[name]));
 
-  // Seed default report fields if empty
   const rfSheet = ss.getSheetByName("report_fields");
   if (rfSheet.getLastRow() <= 1) {
     const defFields = [
@@ -61,14 +81,12 @@ function setupDatabase() {
     defFields.forEach(r => rfSheet.appendRow(r));
   }
 
-  // Seed owner email as first admin if members is empty
   const memSheet = ss.getSheetByName("members");
   if (memSheet.getLastRow() <= 1) {
     const ownerEmail = (Session.getActiveUser().getEmail() || "admin@gmail.com").toLowerCase().trim();
     memSheet.appendRow([1, ownerEmail, "Admin", "admin", 1, "", "", new Date().toISOString()]);
   }
 
-  // Seed sample tutors & schools if empty so the sheet is ready to test
   const tutSheet = ss.getSheetByName("tutors");
   if (tutSheet.getLastRow() <= 1) {
     ["Omar Hassan", "Nada Ali", "Youssef Adel", "Mariam Samir", "Karim Fathy", "Salma Nabil", "Ahmed Tarek", "Hana Mostafa"].forEach((n, i) => {
@@ -158,7 +176,6 @@ function doPost(e) {
       return jsonResponse({ ok: true, now: new Date().toISOString() });
     }
 
-    // Verify Google identity
     const authUser = verifyGoogleToken(body.idToken);
     if (!authUser) {
       return jsonResponse({ ok: false, error: "Invalid or expired Google sign-in token.", code: "UNAUTHENTICATED" });
@@ -167,7 +184,6 @@ function doPost(e) {
     const memSheet = getOrCreateSheet(ss, "members", TABS.members);
     let members = readTable(ss, "members");
 
-    // If database has 0 members at all, auto-seed the first person who logs in as Admin
     if (members.length === 0) {
       const now = new Date().toISOString();
       memSheet.appendRow([1, authUser.email, authUser.name || "Admin", "admin", 1, authUser.sub, now, now]);
@@ -184,7 +200,6 @@ function doPost(e) {
       });
     }
 
-    // Link google_sub and last_login_at on first login or claim_membership
     if (!callerRow.google_sub || action === "claim_membership") {
       const now = new Date().toISOString();
       memSheet.getRange(callerRow._row, 6).setValue(authUser.sub);
@@ -232,7 +247,9 @@ function doPost(e) {
         slot: Number(ts.slot),
         class_name: ts.class_name,
         topic: ts.topic,
-        tutor_id: ts.tutor_id === "" || ts.tutor_id === "0" ? null : Number(ts.tutor_id)
+        tutor_id: ts.tutor_id === "" || ts.tutor_id === "0" ? null : Number(ts.tutor_id),
+        effective_from: ts.effective_from || "",
+        effective_until: ts.effective_until || ""
       }));
       const report_fields = readTable(ss, "report_fields")
         .map(rf => ({
@@ -279,6 +296,16 @@ function doPost(e) {
         })
         .filter(mr => caller.role === "admin" || mr.requester_id === caller.id || mr.approvals[caller.id] !== undefined);
 
+      const notifications = readTable(ss, "notifications")
+        .filter(n => Number(n.recipient_id) === caller.id || (caller.role === "admin" && Number(n.recipient_id) === 0))
+        .map(n => ({
+          id: Number(n.id),
+          recipient_id: Number(n.recipient_id),
+          message: n.message,
+          is_read: Number(n.is_read) === 1,
+          created_at: n.created_at
+        }));
+
       return jsonResponse({
         ok: true,
         data: {
@@ -289,9 +316,21 @@ function doPost(e) {
           template_sessions,
           report_fields,
           access_requests,
-          master_report_requests
+          master_report_requests,
+          notifications
         }
       });
+    }
+
+    if (action === "mark_notifications_read") {
+      const sh = getOrCreateSheet(ss, "notifications", TABS.notifications);
+      const rows = readTable(ss, "notifications");
+      rows.forEach(n => {
+        if (Number(n.recipient_id) === caller.id || (caller.role === "admin" && Number(n.recipient_id) === 0)) {
+          sh.getRange(n._row, 4).setValue(1);
+        }
+      });
+      return jsonResponse({ ok: true });
     }
 
     if (action === "load_day") {
@@ -333,7 +372,6 @@ function doPost(e) {
       return jsonResponse({ ok: true, data: { date, overrides, reports, summaries } });
     }
 
-    // ---------------- ADMIN ONLY MUTATIONS ----------------
     if (action === "add_member") {
       if (caller.role !== "admin") return jsonResponse({ ok: false, error: "Admin only" });
       const email = String(body.email || "").toLowerCase().trim();
@@ -345,6 +383,7 @@ function doPost(e) {
       }
       const id = nextId(members);
       memSheet.appendRow([id, email, name, role, 1, "", "", new Date().toISOString()]);
+      sendAppNotification(ss, id, "Welcome to iSchool Mentor Hub! Your account has been activated.", "Welcome to iSchool Mentor Hub");
       return jsonResponse({ ok: true, data: { id, email, name, role, active: true, auth_user_id: null } });
     }
 
@@ -356,7 +395,6 @@ function doPost(e) {
       const newRole = body.role !== undefined ? body.role : target.role;
       const newActive = body.active !== undefined ? (body.active ? 1 : 0) : Number(target.active);
 
-      // Guard last active admin
       if (target.role === "admin" && Number(target.active) === 1 && (newRole !== "admin" || newActive === 0)) {
         const otherAdmins = members.filter(m => m.role === "admin" && Number(m.active) === 1 && Number(m.id) !== Number(target.id));
         if (otherAdmins.length === 0) {
@@ -410,7 +448,6 @@ function doPost(e) {
       return jsonResponse({ ok: true });
     }
 
-    // ---------------- TEMPLATES ----------------
     if (action === "add_template_session") {
       const school_id = Number(body.school_id);
       if (!hasSchoolAccess(ss, caller, school_id, cairoToday())) {
@@ -424,10 +461,22 @@ function doPost(e) {
       const class_name = String(body.class_name ?? "Grade 4");
       const topic = String(body.topic ?? "New topic");
       const tutor_id = body.tutor_id ? Number(body.tutor_id) : "";
-      sh.appendRow([id, school_id, weekday, slot, class_name, topic, tutor_id]);
+      const effective_from = String(body.effective_from ?? cairoToday());
+      const effective_until = String(body.effective_until ?? "");
+      sh.appendRow([id, school_id, weekday, slot, class_name, topic, tutor_id, effective_from, effective_until]);
       return jsonResponse({
         ok: true,
-        data: { id, school_id, weekday, slot, class_name, topic, tutor_id: tutor_id === "" ? null : tutor_id }
+        data: {
+          id,
+          school_id,
+          weekday,
+          slot,
+          class_name,
+          topic,
+          tutor_id: tutor_id === "" ? null : tutor_id,
+          effective_from,
+          effective_until
+        }
       });
     }
 
@@ -443,6 +492,8 @@ function doPost(e) {
       if (body.class_name !== undefined) sh.getRange(target._row, 5).setValue(String(body.class_name));
       if (body.topic !== undefined) sh.getRange(target._row, 6).setValue(String(body.topic));
       if (body.tutor_id !== undefined) sh.getRange(target._row, 7).setValue(body.tutor_id ? Number(body.tutor_id) : "");
+      if (body.effective_from !== undefined) sh.getRange(target._row, 8).setValue(String(body.effective_from));
+      if (body.effective_until !== undefined) sh.getRange(target._row, 9).setValue(String(body.effective_until));
       return jsonResponse({ ok: true });
     }
 
@@ -467,7 +518,6 @@ function doPost(e) {
       const sh = getOrCreateSheet(ss, "template_sessions", TABS.template_sessions);
       let rows = readTable(ss, "template_sessions");
       const src = rows.filter(r => Number(r.school_id) === school_id && Number(r.weekday) === weekday);
-      // Delete rows for this school on other weekdays (bottom-up)
       const toDelete = rows
         .filter(r => Number(r.school_id) === school_id && Number(r.weekday) !== weekday)
         .sort((a, b) => b._row - a._row);
@@ -478,7 +528,17 @@ function doPost(e) {
       for (let d = 0; d < 7; d++) {
         if (d === weekday) continue;
         src.forEach(s => {
-          sh.appendRow([next++, school_id, d, Number(s.slot), s.class_name, s.topic, s.tutor_id || ""]);
+          sh.appendRow([
+            next++,
+            school_id,
+            d,
+            Number(s.slot),
+            s.class_name,
+            s.topic,
+            s.tutor_id || "",
+            s.effective_from || "",
+            s.effective_until || ""
+          ]);
         });
       }
       const updated = readTable(ss, "template_sessions")
@@ -490,12 +550,13 @@ function doPost(e) {
           slot: Number(ts.slot),
           class_name: ts.class_name,
           topic: ts.topic,
-          tutor_id: ts.tutor_id === "" || ts.tutor_id === "0" ? null : Number(ts.tutor_id)
+          tutor_id: ts.tutor_id === "" || ts.tutor_id === "0" ? null : Number(ts.tutor_id),
+          effective_from: ts.effective_from || "",
+          effective_until: ts.effective_until || ""
         }));
       return jsonResponse({ ok: true, data: updated });
     }
 
-    // ---------------- OVERRIDES ----------------
     if (action === "upsert_override") {
       const session_id = Number(body.session_id);
       const on_date = String(body.on_date);
@@ -524,7 +585,6 @@ function doPost(e) {
       return jsonResponse({ ok: true });
     }
 
-    // ---------------- ACCESS REQUESTS ----------------
     if (action === "create_access_request") {
       const school_ids = (body.school_ids || []).map(Number).filter(Boolean);
       const from_date = String(body.from_date || "");
@@ -540,10 +600,28 @@ function doPost(e) {
         requester_id = Number(body.requester_id);
         owner_id = "";
         status = "approved";
+        sendAppNotification(
+          ss,
+          requester_id,
+          "Admin assigned you temporary school coverage from " + from_date + " to " + until_date + ".",
+          "Temporary School Coverage Assigned"
+        );
       } else {
         requester_id = caller.id;
         owner_id = Number(body.owner_id);
         status = "pending";
+        sendAppNotification(
+          ss,
+          owner_id,
+          caller.name + " requested temporary access to your schools (" + from_date + " to " + until_date + ").",
+          "New Temporary Access Request"
+        );
+        sendAppNotification(
+          ss,
+          0,
+          caller.name + " requested temporary school access (" + from_date + " to " + until_date + ").",
+          "New Temporary Access Request"
+        );
       }
       sh.appendRow([id, requester_id, owner_id, from_date, until_date, status, JSON.stringify(school_ids), new Date().toISOString()]);
       return jsonResponse({
@@ -561,10 +639,15 @@ function doPost(e) {
         return jsonResponse({ ok: false, error: "Not allowed" });
       }
       sh.getRange(target._row, 6).setValue(String(body.status));
+      sendAppNotification(
+        ss,
+        Number(target.requester_id),
+        "Your temporary access request (" + target.from_date + " to " + target.until_date + ") was " + body.status + " by " + caller.name + ".",
+        "Access Request " + body.status
+      );
       return jsonResponse({ ok: true });
     }
 
-    // ---------------- REPORTS & SUMMARIES ----------------
     if (action === "set_report_answer") {
       const school_id = Number(body.school_id);
       const report_date = String(body.report_date);
@@ -609,10 +692,17 @@ function doPost(e) {
       } else {
         sh.appendRow([member_id, report_date, String(body.note ?? ""), body.submit ? new Date().toISOString() : ""]);
       }
+      if (body.submit) {
+        sendAppNotification(
+          ss,
+          0,
+          caller.name + " submitted their daily report for " + report_date + ".",
+          "Daily Report Submitted — " + caller.name
+        );
+      }
       return jsonResponse({ ok: true });
     }
 
-    // ---------------- REPORT FIELDS ----------------
     if (action === "add_report_field") {
       if (caller.role !== "admin") return jsonResponse({ ok: false, error: "Admin only" });
       const sh = getOrCreateSheet(ss, "report_fields", TABS.report_fields);
@@ -659,7 +749,6 @@ function doPost(e) {
       return jsonResponse({ ok: true });
     }
 
-    // ---------------- MASTER REPORT ----------------
     if (action === "create_master_request") {
       const from_date = String(body.from_date);
       const to_date = String(body.to_date);
@@ -670,7 +759,16 @@ function doPost(e) {
       const ap = {};
       members
         .filter(m => m.role === "mentor" && Number(m.active) === 1 && Number(m.id) !== caller.id)
-        .forEach(m => (ap[Number(m.id)] = "pending"));
+        .forEach(m => {
+          ap[Number(m.id)] = "pending";
+          sendAppNotification(
+            ss,
+            Number(m.id),
+            caller.name + " requested Master Report approval (" + from_date + " to " + to_date + ").",
+            "Master Report Request"
+          );
+        });
+      sendAppNotification(ss, 0, caller.name + " requested Master Report access (" + from_date + " to " + to_date + ").", "Master Report Request");
       sh.appendRow([id, caller.id, from_date, to_date, "", JSON.stringify(ap), new Date().toISOString()]);
       return jsonResponse({ ok: true, data: { id, requester_id: caller.id, from_date, to_date, admin_decision: null, approvals: ap } });
     }
@@ -693,6 +791,12 @@ function doPost(e) {
         ap[caller.id] = String(body.status);
         sh.getRange(target._row, 6).setValue(JSON.stringify(ap));
       }
+      sendAppNotification(
+        ss,
+        Number(target.requester_id),
+        caller.name + " " + body.status + " your Master Report request (" + target.from_date + " to " + target.to_date + ").",
+        "Master Report Update"
+      );
       return jsonResponse({ ok: true });
     }
 
@@ -766,4 +870,3 @@ function doPost(e) {
     lock.releaseLock();
   }
 }
-

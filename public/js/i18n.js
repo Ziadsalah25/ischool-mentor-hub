@@ -114,7 +114,19 @@ const AR = {
   "View": "عرض",
   "Select": "اختر",
   "Yes": "نعم",
-  "No": "لا"
+  "No": "لا",
+  "Notifications": "الإشعارات",
+  "Mark all read": "تحديد الكل كمقروء",
+  "No notifications yet.": "لا توجد إشعارات حتى الآن.",
+  "Effective from": "يسري من تاريخ",
+  "Effective until (optional)": "ينتهي في تاريخ (اختياري)",
+  "Always active": "ساري دائماً",
+  "Weekly Analytics & Compliance (Last 7 Days)": "إحصائيات الالتزام والأداء (آخر 7 أيام)",
+  "Tutor Coverage Rate": "نسبة تغطية المدربين للحصص",
+  "Report Completion Rate": "نسبة إكمال التقارير اليومية",
+  "Total Scheduled (7d)": "إجمالي الحصص (7 أيام)",
+  "Cancelled Sessions (7d)": "الحصص الملغاة (7 أيام)",
+  "Download full backup (JSON)": "تحميل نسخة احتياطية كاملة (JSON)"
 };
 
 export function getLang() {
@@ -142,4 +154,3 @@ export function tr(text) {
   if (getLang() !== "ar") return text;
   return AR[text] || text;
 }
-

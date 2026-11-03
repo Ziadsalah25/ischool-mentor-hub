@@ -14,13 +14,14 @@ export const TY = [
 
 export const td = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
 export const $ = i => document.getElementById(i);
-export const E = t => String(t ?? "").replace(/[&<>"']/g, c => ({
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;"
-}[c]));
+export const E = t =>
+  String(t ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
 export const E7 = () => ({ 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] });
 
 export const DEF = [
@@ -51,10 +52,33 @@ export function seed() {
     for (let d = 0; d < 7; d++)
       tpl[k.id][d] = (d > 4 ? [] : [0, 1]).map(e => {
         const i = si * 2 + e;
-        return { id: i + 1, t: (i + (i >= 8 ? 1 : 0)) % 4, cls: cls[(i + d) % 3], tu: i == 5 ? 0 : (i % 8) + 1, tp: tp[(i + d) % 5] };
+        return {
+          id: i + 1,
+          t: (i + (i >= 8 ? 1 : 0)) % 4,
+          cls: cls[(i + d) % 3],
+          tu: i == 5 ? 0 : (i % 8) + 1,
+          tp: tp[(i + d) % 5],
+          ef: "", // effective_from (empty = always active)
+          eu: ""  // effective_until (empty = no end date)
+        };
       });
   });
-  return { users, tutors, schools, tpl, over: {}, reqs: [], rtpl: DEF, reps: {}, msub: {}, mnote: {}, mreqs: [] };
+  return {
+    users,
+    tutors,
+    schools,
+    tpl,
+    over: {},
+    reqs: [],
+    rtpl: DEF,
+    reps: {},
+    msub: {},
+    mnote: {},
+    mreqs: [],
+    notifs: [
+      { id: 1, to: 1, txt: "Welcome to iSchool Mentor Hub! Check the new 7-day analytics & notifications.", dt: td(), rd: 0 }
+    ]
+  };
 }
 
 export let S;
@@ -62,6 +86,7 @@ try {
   S = JSON.parse(localStorage.getItem(KEY));
 } catch (e) {}
 if (!S || !S.users) S = seed();
+if (!S.notifs) S.notifs = [];
 
 export const ui = {
   me: null,
@@ -74,7 +99,8 @@ export const ui = {
   msg: "",
   mv: null,
   mf: td(),
-  mt: td()
+  mt: td(),
+  showNotifs: false
 };
 
 export const save = () => {
@@ -82,6 +108,11 @@ export const save = () => {
     localStorage.setItem(KEY, JSON.stringify(S));
   } catch (e) {}
 };
+
+export function pushNotif(toId, txt) {
+  if (!S.notifs) S.notifs = [];
+  S.notifs.push({ id: Date.now() + Math.floor(Math.random() * 1000), to: toId, txt, dt: td(), rd: 0 });
+}
 
 export const usr = i => S.users.find(u => u.id == i) || { n: "?" };
 export const tut = i => S.tutors.find(t => t.id == i);
@@ -95,11 +126,16 @@ export const acc = (u, d) =>
     ? S.schools
     : S.schools.filter(k => k.own == u.id || S.reqs.some(r => r.st == "approved" && r.by == u.id && r.sch.includes(k.id) && r.from <= d && d <= r.until));
 
+/**
+ * Generates day instances while respecting Template Effective Dates (`ef` = effective_from, `eu` = effective_until)
+ */
 export function inst(d) {
   const w = new Date(d + "T12:00").getDay();
   const o = [];
   S.schools.forEach(k =>
     ((S.tpl[k.id] || {})[w] || []).forEach(e => {
+      if (e.ef && d < e.ef) return; // Not yet effective on date `d`
+      if (e.eu && d > e.eu) return; // Expired before date `d`
       const key = d + "|" + k.id + "|" + e.id,
         v = S.over[key] || {};
       o.push({ key, k, e, tu: v.tu !== undefined ? v.tu : e.tu, x: !!v.x });
@@ -126,6 +162,17 @@ export const dates = (a, b) => {
     o.push(x.toISOString().slice(0, 10));
   return o;
 };
+
+export function lastNDates(endDate, n = 7) {
+  const o = [];
+  const end = new Date(endDate + "T12:00");
+  for (let i = n - 1; i >= 0; i--) {
+    const x = new Date(end);
+    x.setDate(end.getDate() - i);
+    o.push(x.toISOString().slice(0, 10));
+  }
+  return o;
+}
 
 export function rows(a, b, ms) {
   const R = [["Date", "Mentor", "School"].concat(S.rtpl.map(f => f.l), ["Mentor note"])];
@@ -158,4 +205,3 @@ export function exp(R, name, flashFn) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   if (flashFn) flashFn("Export ready: " + name);
 }
-

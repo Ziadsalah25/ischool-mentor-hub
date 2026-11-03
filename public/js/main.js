@@ -1,4 +1,4 @@
-import { S, ui, DN, E, E7, $, td, save, usr, tut, sch, inst, conf, mst, rows, exp } from "./state.js";
+import { S, ui, DN, E, E7, $, td, save, pushNotif, usr, tut, sch, inst, conf, mst, rows, exp } from "./state.js";
 import { isCloudConfigured } from "./config.js";
 import { callApi, loadBootstrap, loadDay } from "./api.js";
 import { initGoogleSignIn, resumeCloudSession, signOutCloud } from "./auth.js";
@@ -50,17 +50,45 @@ const picked = () => [...document.querySelectorAll(".rs:checked")].map(x => +x.v
 
 const th = $("th"),
   ln = $("ln"),
+  nb = $("nb"),
   root = document.documentElement,
   dark = () => (root.dataset.theme ? root.dataset.theme == "dark" : matchMedia("(prefers-color-scheme:dark)").matches);
+
+function myNotifs() {
+  if (!ui.me) return [];
+  return (S.notifs || []).filter(n => n.to == ui.me.id || (ui.me.role == "admin" && n.to == 0)).slice().reverse();
+}
 
 function updateHeaderControls() {
   if (th) th.textContent = dark() ? tr("Light mode") : tr("Dark mode");
   if (ln) ln.textContent = getLang() === "ar" ? "English" : "عربي";
+  if (nb && ui.me) {
+    const unread = myNotifs().filter(n => !n.rd).length;
+    nb.innerHTML = `${E(tr("Notifications"))}${unread ? `<span class="badge">${unread}</span>` : ""}`;
+  }
   if ($("lo")) $("lo").textContent = tr("Sign out");
   if ($("login-title")) $("login-title").textContent = tr("Mentor Hub sign in");
   if ($("lu-lbl")) $("lu-lbl").firstChild.textContent = tr("Username");
   if ($("lp-lbl")) $("lp-lbl").firstChild.textContent = tr("Password");
   if ($("lg")) $("lg").textContent = tr("Sign in");
+}
+
+function renderNotifPanel() {
+  if (!ui.showNotifs || !ui.me) return "";
+  const list = myNotifs();
+  return `<div class="npanel">
+    <div class="r"><h3>${E(tr("Notifications"))}</h3><button class="sm" data-a="nread">${E(tr("Mark all read"))}</button></div>
+    ${
+      list.length
+        ? list
+            .slice(0, 15)
+            .map(
+              n => `<div class="nitem ${n.rd ? "" : "unread"}"><span>${E(n.txt)}</span><span class="m">${E(n.dt || "")}</span></div>`
+            )
+            .join("")
+        : `<p class="m">${E(tr("No notifications yet."))}</p>`
+    }
+  </div>`;
 }
 
 export function render() {
@@ -94,7 +122,8 @@ export function render() {
   $("nav").innerHTML = t
     .map(x => `<button data-a="tab" data-v="${x[0]}"${x[0] == ui.tab ? ' aria-current="true"' : ""}>${E(tr(x[1]))}</button>`)
     .join("");
-  $("v").innerHTML = (ui.msg ? `<div class="fl" role="status">${E(ui.msg)}</div>` : "") + V[ui.tab]();
+  $("v").innerHTML =
+    renderNotifPanel() + (ui.msg ? `<div class="fl" role="status">${E(ui.msg)}</div>` : "") + V[ui.tab]();
   ui.msg = "";
   if (!cloud) save();
 }
@@ -133,6 +162,18 @@ document.addEventListener("click", async e => {
     ui.tab = "dash";
     return render();
   }
+  if (a == "nread") {
+    (S.notifs || []).forEach(n => {
+      if (n.to == me.id || (me.role == "admin" && n.to == 0)) n.rd = 1;
+    });
+    if (cloud) {
+      try {
+        await callApi("mark_notifications_read");
+      } catch (err) {}
+    }
+    ui.showNotifs = false;
+    return render();
+  }
 
   b.disabled = true;
   try {
@@ -164,8 +205,9 @@ document.addEventListener("click", async e => {
       return render();
     }
 
-    // Templates
+    // Templates (with Effective Date defaults to today so past history is preserved)
     if (a == "adde") {
+      const effFrom = td();
       if (cloud) {
         const row = await callApi("add_template_session", {
           school_id: ui.sc_,
@@ -173,11 +215,21 @@ document.addEventListener("click", async e => {
           slot: 0,
           class_name: "Grade 4",
           topic: "New topic",
-          tutor_id: null
+          tutor_id: null,
+          effective_from: effFrom,
+          effective_until: ""
         });
-        S.tpl[ui.sc_][ui.dy].push({ id: row.id, t: row.slot, cls: row.class_name, tu: row.tutor_id || 0, tp: row.topic });
+        S.tpl[ui.sc_][ui.dy].push({
+          id: row.id,
+          t: row.slot,
+          cls: row.class_name,
+          tu: row.tutor_id || 0,
+          tp: row.topic,
+          ef: row.effective_from || effFrom,
+          eu: row.effective_until || ""
+        });
       } else {
-        S.tpl[ui.sc_][ui.dy].push({ id: Date.now(), t: 0, cls: "Grade 4", tu: 0, tp: "New topic" });
+        S.tpl[ui.sc_][ui.dy].push({ id: Date.now(), t: 0, cls: "Grade 4", tu: 0, tp: "New topic", ef: effFrom, eu: "" });
       }
       return render();
     }
@@ -200,13 +252,14 @@ document.addEventListener("click", async e => {
       return flash("Copied " + DN[ui.dy] + " to all days.");
     }
 
-    // Temporary access requests
+    // Temporary access requests (+ automatic notifications)
     if (a == "rqs") {
       const sh = picked(),
         f = $("rf").value,
         u = $("ru").value;
       if (!sh.length) return flash("Choose at least one school.");
       if (!f || !u || u < f) return flash("Check the dates.");
+      const schoolNames = sh.map(sid => sch(sid)?.n || sid).join(", ");
       if (cloud) {
         const r = await callApi("create_access_request", {
           requester_id: me.role == "admin" ? +$("rb").value : me.id,
@@ -225,22 +278,32 @@ document.addEventListener("click", async e => {
           st: r.status
         });
       } else {
+        const byId = me.role == "admin" ? +$("rb").value : me.id;
+        const toId = me.role == "admin" ? 0 : ui.rqo;
         S.reqs.push({
           id: Date.now(),
-          by: me.role == "admin" ? +$("rb").value : me.id,
-          to: me.role == "admin" ? 0 : ui.rqo,
+          by: byId,
+          to: toId,
           sch: sh,
           from: f,
           until: u,
           st: me.role == "admin" ? "approved" : "pending"
         });
+        if (me.role == "admin") {
+          pushNotif(byId, `Admin assigned you temporary access to ${schoolNames} (${f} to ${u}).`);
+        } else {
+          pushNotif(toId, `${me.n} requested temporary access to ${schoolNames} (${f} to ${u}).`);
+          pushNotif(1, `${me.n} requested temporary access to ${schoolNames} (${f} to ${u}).`);
+        }
       }
-      return flash(me.role == "admin" ? "Schools assigned." : "Request sent.");
+      return flash(me.role == "admin" ? "Schools assigned & mentor notified." : "Request sent & owner notified.");
     }
 
     if (a == "rs") {
       if (cloud) await callApi("set_access_request_status", { id, status: v });
-      S.reqs.find(r => r.id == id).st = v;
+      const reqObj = S.reqs.find(r => r.id == id);
+      reqObj.st = v;
+      pushNotif(reqObj.by, `Your temporary access request (${reqObj.from} to ${reqObj.until}) was ${v} by ${me.n}.`);
       return render();
     }
 
@@ -324,7 +387,7 @@ document.addEventListener("click", async e => {
       return render();
     }
 
-    // Daily reports & Report form
+    // Daily reports & Report form (+ notify admin on submission)
     if (a == "msub") {
       if (cloud) {
         await callApi("upsert_daily_summary", {
@@ -335,7 +398,8 @@ document.addEventListener("click", async e => {
         });
       }
       S.msub[ui.date + "|" + id] = true;
-      return flash("Daily report submitted.");
+      pushNotif(1, `${usr(id).n} submitted their daily report for ${ui.date}.`);
+      return flash("Daily report submitted & admin notified.");
     }
 
     if (a == "mexp") return exp(rows(ui.date, ui.date, [usr(id)]), "daily-report-" + (usr(id).u || usr(id).id) + "-" + ui.date + ".csv", flash);
@@ -368,7 +432,7 @@ document.addEventListener("click", async e => {
       return render();
     }
 
-    // Master report
+    // Master report (+ automatic notifications)
     if (a == "mrq") {
       if (!ui.mf || !ui.mt || ui.mt < ui.mf) return flash("Check the dates.");
       if (cloud) {
@@ -376,7 +440,11 @@ document.addEventListener("click", async e => {
         S.mreqs.push({ id: row.id, by: row.requester_id, from: row.from_date, to: row.to_date, ap: row.approvals, adm: null });
       } else {
         const ap = {};
-        ms.filter(x => x.on && x.id != me.id).forEach(x => (ap[x.id] = "pending"));
+        ms.filter(x => x.on && x.id != me.id).forEach(x => {
+          ap[x.id] = "pending";
+          pushNotif(x.id, `${me.n} requested Master Report approval for ${ui.mf} to ${ui.mt}.`);
+        });
+        pushNotif(1, `${me.n} requested Master Report access (${ui.mf} to ${ui.mt}).`);
         S.mreqs.push({ id: Date.now(), by: me.id, from: ui.mf, to: ui.mt, ap, adm: null });
       }
       return flash("Request sent to all other mentors.");
@@ -384,13 +452,17 @@ document.addEventListener("click", async e => {
 
     if (a == "map") {
       if (cloud) await callApi("decide_master_request", { id, status: v, as_admin: false });
-      S.mreqs.find(x => x.id == id).ap[me.id] = v;
+      const mrObj = S.mreqs.find(x => x.id == id);
+      mrObj.ap[me.id] = v;
+      pushNotif(mrObj.by, `${me.n} ${v} your Master Report request (${mrObj.from} to ${mrObj.to}).`);
       return render();
     }
 
     if (a == "aap") {
       if (cloud) await callApi("decide_master_request", { id, status: v, as_admin: true });
-      S.mreqs.find(x => x.id == id).adm = v;
+      const mrObj = S.mreqs.find(x => x.id == id);
+      mrObj.adm = v;
+      pushNotif(mrObj.by, `Admin ${v} your Master Report request (${mrObj.from} to ${mrObj.to}).`);
       return render();
     }
 
@@ -482,7 +554,9 @@ document.addEventListener("change", async e => {
           slot: x.t,
           class_name: x.cls,
           topic: x.tp,
-          tutor_id: x.tu || null
+          tutor_id: x.tu || null,
+          effective_from: x.ef || "",
+          effective_until: x.eu || ""
         });
       }
       return render();
@@ -589,6 +663,7 @@ $("lg").onclick = () => {
   ui.me = u;
   ui.tab = "";
   ui.mv = null;
+  ui.showNotifs = false;
   $("lp").value = "";
   render();
 };
@@ -602,11 +677,19 @@ const handleSignOut = () => {
   notAuthEmail = "";
   ui.me = null;
   ui.mv = null;
+  ui.showNotifs = false;
   render();
 };
 
 $("lo").onclick = handleSignOut;
 if ($("na-out")) $("na-out").onclick = handleSignOut;
+
+if (nb) {
+  nb.onclick = () => {
+    ui.showNotifs = !ui.showNotifs;
+    render();
+  };
+}
 
 try {
   const t = localStorage.getItem("mh-theme");

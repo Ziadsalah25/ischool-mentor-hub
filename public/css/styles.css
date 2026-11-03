@@ -45,4 +45,14 @@ label.m{display:block}label.m select,label.m input{margin-top:4px}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-top:1px solid var(--line)}th{color:var(--muted);font-weight:600}
 [dir="rtl"] th,[dir="rtl"] td{text-align:right}
 .sc{overflow-x:auto}
-
+/* Progress bars & Notification bell */
+.pb{width:100%;height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}
+.pb > i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .3s ease}
+.pb.warn > i{background:var(--orange)}
+.pb.bad > i{background:var(--bad)}
+.bell-wrap{position:relative;display:inline-block}
+.badge{background:var(--orange);color:#fff;font-size:11px;font-weight:700;border-radius:99px;padding:1px 6px;margin-left:4px}
+.npanel{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.nitem{padding:8px 0;border-top:1px solid var(--line);font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nitem:first-child{border-top:0}
+.nitem.unread{font-weight:600}

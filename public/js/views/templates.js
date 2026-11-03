@@ -16,14 +16,21 @@ export function tp() {
     (n, i) => `<button class="sm${i == ui.dy ? " p" : ""}" data-a="dy" data-v="${i}">${E(tr(n))}</button>`
   ).join("")}</div>`;
   (T[ui.dy] || []).forEach(e => {
-    h += `<div class="c"><div class="f"><select data-c="ef" data-f="t" data-id="${e.id}" aria-label="Time">${opts(
+    const effBadge = e.ef || e.eu ? `<span class="tg">${E(e.ef || "...")} → ${E(e.eu || "∞")}</span>` : `<span class="m">(${E(tr("Always active"))})</span>`;
+    h += `<div class="c"><div class="r"><b class="m">${SL[e.t]}</b>${effBadge}</div><div class="f"><select data-c="ef" data-f="t" data-id="${
+      e.id
+    }" aria-label="Time">${opts(
       SL.map((s, i) => [i, s]),
       e.t
     )}</select><input data-c="ef" data-f="cls" data-id="${e.id}" value="${E(e.cls)}" aria-label="Class"><input data-c="ef" data-f="tp" data-id="${
       e.id
     }" value="${E(e.tp)}" aria-label="Topic"><select data-c="ef" data-f="tu" data-id="${e.id}" aria-label="Tutor">${tutOpts(
       e.tu
-    )}</select></div><button class="sm" data-a="del" data-id="${e.id}">${E(tr("Remove"))}</button></div>`;
+    )}</select><label class="m">${E(tr("Effective from"))}<input type="date" data-c="ef" data-f="ef" data-id="${e.id}" value="${E(
+      e.ef || ""
+    )}"></label><label class="m">${E(tr("Effective until (optional)"))}<input type="date" data-c="ef" data-f="eu" data-id="${
+      e.id
+    }" value="${E(e.eu || "")}"></label></div><button class="sm" data-a="del" data-id="${e.id}">${E(tr("Remove"))}</button></div>`;
   });
   return (
     h +
@@ -32,4 +39,3 @@ export function tp() {
     )} to all days</button></div>`
   );
 }
-
