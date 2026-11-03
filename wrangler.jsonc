@@ -6,6 +6,6 @@
     "directory": "./public"
   },
   "vars": {
-    "GOOGLE_SCRIPT_URL": ""
+    "GOOGLE_SCRIPT_URL": "https://script.google.com/macros/s/AKfycbwo2mj3uga-jjRprQjaDe87ahHo8dBk-jBZPoHv3vyEwfrilyBDeWuRZwiK1Iv5i3a-_Q/exec"
   }
 }

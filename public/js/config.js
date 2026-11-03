@@ -2,7 +2,7 @@
 // iSchool Mentor Hub — Configuration
 // =====================================================================
 // Put your Cloudflare Worker URL or Google Apps Script Web App URL here:
-export const BACKEND_URL = "";
+export const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwo2mj3uga-jjRprQjaDe87ahHo8dBk-jBZPoHv3vyEwfrilyBDeWuRZwiK1Iv5i3a-_Q/exec";
 
 // Put your Google OAuth Client ID here (from Google Cloud Console):
 export const GOOGLE_CLIENT_ID = "";
