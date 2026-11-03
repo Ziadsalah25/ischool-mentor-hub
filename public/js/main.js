@@ -652,7 +652,7 @@ document.addEventListener("visibilitychange", () => {
 
 // Login & header buttons
 $("lg").onclick = async () => {
-  const emailOrUser = $("lu").value.trim().toLowerCase();
+  let emailOrUser = $("lu").value.trim().toLowerCase();
   const pass = $("lp").value;
   const errEl = $("le");
   if (errEl) errEl.textContent = "";
@@ -660,6 +660,11 @@ $("lg").onclick = async () => {
   if (!emailOrUser || !pass) {
     if (errEl) errEl.textContent = tr("Please enter both email and password.");
     return;
+  }
+
+  // Normalize admin alias variations (e.g. zaid typo, admin, ziad)
+  if (emailOrUser === "zaidmohamedsalah63@gmail.com" || emailOrUser === "admin" || emailOrUser === "ziad" || emailOrUser === "zaid") {
+    emailOrUser = "ziadmohamedsalah63@gmail.com";
   }
 
   const cloud = isCloudConfigured();
