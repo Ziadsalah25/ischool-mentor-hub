@@ -1,8 +1,26 @@
 import { GOOGLE_CLIENT_ID, isCloudConfigured } from "./config.js";
-import { getAuthToken, setAuthToken, loadBootstrap, loadDay } from "./api.js";
+import { getAuthToken, setAuthToken, loadBootstrap, loadDay, callApi } from "./api.js";
 import { ui, td, $ } from "./state.js";
 
 let gsiInitialized = false;
+
+export async function loginWithPassword(email, password) {
+  const data = await callApi("login_password", { email, password });
+  if (!data || !data.token) {
+    throw new Error("Login failed: no session token returned.");
+  }
+  setAuthToken(data.token);
+  const meRow = await loadBootstrap();
+  await loadDay(ui.date || td());
+  return {
+    id: Number(meRow.id || data.user.id),
+    n: meRow.name || data.user.name,
+    email: meRow.email || data.user.email,
+    u: meRow.email || data.user.email,
+    role: meRow.role || data.user.role,
+    on: 1
+  };
+}
 
 export function initGoogleSignIn(onSuccess, onNotAuthorized, onError) {
   if (!isCloudConfigured() || !GOOGLE_CLIENT_ID) return;

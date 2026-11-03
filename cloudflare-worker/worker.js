@@ -28,6 +28,10 @@ function cairoToday() {
 
 async function verifyGoogleToken(idToken, env) {
   if (!idToken) return null;
+  if (idToken.startsWith("tok:")) {
+    const parts = idToken.split(":");
+    return { id: Number(parts[1]), email: (parts[2] || "").toLowerCase().trim(), tokenAuth: true };
+  }
   // Support demo/dev token when testing before Google OAuth client is set
   if (idToken.startsWith("dev:")) {
     const [, email, name, role] = idToken.split(":");

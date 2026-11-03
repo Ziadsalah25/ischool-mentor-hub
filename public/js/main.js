@@ -1,7 +1,7 @@
 import { S, ui, DN, E, E7, $, td, save, pushNotif, usr, tut, sch, inst, conf, mst, rows, exp } from "./state.js";
-import { isCloudConfigured } from "./config.js";
+import { isCloudConfigured, GOOGLE_CLIENT_ID } from "./config.js";
 import { callApi, loadBootstrap, loadDay } from "./api.js";
-import { initGoogleSignIn, resumeCloudSession, signOutCloud } from "./auth.js";
+import { initGoogleSignIn, resumeCloudSession, signOutCloud, loginWithPassword } from "./auth.js";
 import { LOGO_URL } from "./logo.js";
 import { getLang, setLang, applyDir, tr } from "./i18n.js";
 import { dash } from "./views/dash.js";
@@ -100,8 +100,13 @@ export function render() {
   updateHeaderControls();
 
   const cloud = isCloudConfigured();
-  if ($("google-login-box")) $("google-login-box").hidden = !cloud;
-  if ($("demo-login-box")) $("demo-login-box").hidden = cloud;
+  if ($("google-login-box")) $("google-login-box").hidden = !(cloud && GOOGLE_CLIENT_ID);
+  if ($("demo-login-box")) $("demo-login-box").hidden = false;
+  if ($("login-hint")) {
+    $("login-hint").textContent = cloud
+      ? tr("Admin: ziadmohamedsalah63@gmail.com")
+      : tr("Demo accounts: admin / admin123, mentor1 / pass1234");
+  }
 
   if (notAuthEmail) {
     $("login").hidden = true;
@@ -653,19 +658,50 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // Login & header buttons
-$("lg").onclick = () => {
-  const u = S.users.find(x => x.u == $("lu").value.trim().toLowerCase() && x.p == $("lp").value && x.on);
-  if (!u) {
-    $("le").textContent = "Wrong username or password, or the account is disabled.";
+$("lg").onclick = async () => {
+  const emailOrUser = $("lu").value.trim().toLowerCase();
+  const pass = $("lp").value;
+  const errEl = $("le");
+  if (errEl) errEl.textContent = "";
+
+  if (!emailOrUser || !pass) {
+    if (errEl) errEl.textContent = tr("Please enter both email and password.");
     return;
   }
-  $("le").textContent = "";
-  ui.me = u;
-  ui.tab = "";
-  ui.mv = null;
-  ui.showNotifs = false;
-  $("lp").value = "";
-  render();
+
+  const cloud = isCloudConfigured();
+  if (cloud) {
+    const lgBtn = $("lg");
+    const origText = lgBtn.textContent;
+    lgBtn.disabled = true;
+    lgBtn.textContent = tr("Signing in...");
+    try {
+      const user = await loginWithPassword(emailOrUser, pass);
+      ui.me = user;
+      ui.tab = "";
+      ui.mv = null;
+      ui.showNotifs = false;
+      $("lp").value = "";
+      render();
+    } catch (err) {
+      if (errEl) errEl.textContent = err.message || tr("Sign in failed.");
+    } finally {
+      lgBtn.disabled = false;
+      lgBtn.textContent = origText;
+    }
+  } else {
+    const u = S.users.find(x => (x.u == emailOrUser || x.email == emailOrUser) && x.p == pass && x.on);
+    if (!u) {
+      if (errEl) errEl.textContent = tr("Wrong username or password, or the account is disabled.");
+      return;
+    }
+    ui.me = u;
+    ui.tab = "";
+    ui.mv = null;
+    ui.showNotifs = false;
+    $("lp").value = "";
+    render();
+  }
 };
 
 $("lp").onkeydown = e => {

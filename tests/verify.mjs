@@ -222,6 +222,17 @@ const dayData = postGs({ action: "load_day", idToken: "mentor-token", date: "202
 assert(dayData.ok === true && dayData.data.reports.length === 1 && dayData.data.reports[0].answers["1"] === "4", "Day report loaded accurately");
 assert(dayData.data.summaries.length === 1 && dayData.data.summaries[0].note === "Great day!", "Daily summary loaded accurately");
 
+// 2.7 Test Password Authentication & Session Token
+const badPass = postGs({ action: "login_password", email: "ziadmohamedsalah63@gmail.com", password: "wrong" });
+assert(badPass.ok === false, "Bad password must be rejected");
+
+const goodPass = postGs({ action: "login_password", email: "ziadmohamedsalah63@gmail.com", password: "zizoms_2511" });
+assert(goodPass.ok === true && goodPass.data.token.startsWith("tok:") && goodPass.data.user.role === "admin", "Admin password login must succeed");
+
+const tokBoot = postGs({ action: "load_bootstrap", idToken: goodPass.data.token });
+assert(tokBoot.ok === true && tokBoot.data.me.email === "ziadmohamedsalah63@gmail.com", "Session token authentication must load bootstrap");
+console.log("PASS: Password login & session token authentication verified.");
+
 console.log("PASS: All Google Sheets Database operations & permissions verified.");
 console.log("ALL TESTS PASSED SUCCESSFULLY!");
 
