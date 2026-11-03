@@ -1,0 +1,14 @@
+{
+  "name": "ischool-mentor-hub",
+  "version": "1.0.0",
+  "description": "iSchool Mentor Hub Backend & Frontend",
+  "type": "module",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "test": "node tests/verify.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

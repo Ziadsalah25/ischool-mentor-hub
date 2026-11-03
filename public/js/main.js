@@ -102,11 +102,6 @@ export function render() {
   const cloud = isCloudConfigured();
   if ($("google-login-box")) $("google-login-box").hidden = !(cloud && GOOGLE_CLIENT_ID);
   if ($("demo-login-box")) $("demo-login-box").hidden = false;
-  if ($("login-hint")) {
-    $("login-hint").textContent = cloud
-      ? tr("Admin: ziadmohamedsalah63@gmail.com")
-      : tr("Demo accounts: admin / admin123, mentor1 / pass1234");
-  }
 
   if (notAuthEmail) {
     $("login").hidden = true;
@@ -707,6 +702,17 @@ $("lg").onclick = async () => {
 $("lp").onkeydown = e => {
   if (e.key == "Enter") $("lg").click();
 };
+
+const pwToggle = $("toggle-pw");
+if (pwToggle) {
+  pwToggle.onclick = () => {
+    const input = $("lp");
+    if (!input) return;
+    const isPw = input.type === "password";
+    input.type = isPw ? "text" : "password";
+    pwToggle.textContent = isPw ? "🙈" : "👁️";
+  };
+}
 
 const handleSignOut = () => {
   signOutCloud();

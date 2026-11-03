@@ -4,30 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>iSchool Mentor Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div id="login" hidden>
-  <div class="c">
+  <div class="c" id="login-card">
     <div class="logo"><img class="brand-logo" src="assets/logo.png" alt="iSchool"></div>
     <h2 id="login-title" style="margin-top:0">Mentor Hub sign in</h2>
     <div id="google-login-box" hidden style="margin:14px 0">
       <div id="google-btn-container" style="display:flex;justify-content:center"></div>
       <div style="display:flex;align-items:center;margin:14px 0;gap:8px">
-        <hr style="flex:1;border:none;border-top:1px solid var(--bdr,#e2e8f0)">
-        <span class="m" style="font-size:12px">Or with Email / أو بالإيميل</span>
-        <hr style="flex:1;border:none;border-top:1px solid var(--bdr,#e2e8f0)">
+        <hr style="flex:1;border:none;border-top:1px solid var(--line)">
+        <span class="m" style="font-size:12px">Or with credentials / أو بالحساب</span>
+        <hr style="flex:1;border:none;border-top:1px solid var(--line)">
       </div>
     </div>
     <div id="demo-login-box">
-      <label id="lu-lbl" class="m">Email or Username<input id="lu" type="text" placeholder="ziadmohamedsalah63@gmail.com" autocomplete="username"></label>
-      <label id="lp-lbl" class="m" style="margin-top:8px">Password<input id="lp" type="password" placeholder="••••••••" autocomplete="current-password"></label>
-      <button class="p" id="lg" style="width:100%;margin-top:10px">Sign in</button>
-      <p class="m" id="login-hint">Admin: ziadmohamedsalah63@gmail.com</p>
+      <label id="lu-lbl" class="m">Username or Email
+        <input id="lu" type="text" placeholder="name@example.com" autocomplete="username">
+      </label>
+      <label id="lp-lbl" class="m" style="margin-top:12px">Password
+        <div class="pw-wrap">
+          <input id="lp" type="password" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" id="toggle-pw" class="pw-eye" aria-label="Toggle password visibility" title="Show/Hide Password">👁️</button>
+        </div>
+      </label>
+      <button class="p" id="lg" style="width:100%;margin-top:16px">Sign in</button>
     </div>
-    <div id="le" class="bad" role="alert" style="margin-top:8px"></div>
+    <div id="le" class="bad" role="alert" style="margin-top:10px;text-align:center"></div>
   </div>
 </div>
 <div id="not-auth" hidden style="max-width:420px;margin:40px auto;padding:0 16px">
